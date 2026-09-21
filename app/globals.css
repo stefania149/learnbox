@@ -44,6 +44,32 @@
   }
 }
 
+/* Coperta retro: ecranul pe care cade utilizatorul când intră. E un obiect —
+   un monitor pe un birou — deci culorile lui nu urmează schema luminoasă sau
+   întunecată a sistemului; sunt aceleași mereu, ca o fotografie. Tot tokenuri
+   (principiul 9): la pasul 24 devin paleta temei „terminal" (§10), fără să se
+   atingă ecranul. */
+:root {
+  --tema-retro-lemn: oklch(0.22 0.03 58);
+  --tema-retro-carcasa: oklch(0.32 0.035 74);
+  --tema-retro-carcasa-slab: oklch(0.26 0.03 70);
+  --tema-retro-contur: oklch(0.45 0.04 80);
+  --tema-retro-ecran: oklch(0.19 0.03 155);
+  --tema-retro-ecran-slab: oklch(0.24 0.035 155);
+  --tema-retro-fosfor: oklch(0.87 0.19 145);
+  --tema-retro-fosfor-slab: oklch(0.76 0.1 150);
+  --tema-retro-eticheta: oklch(0.88 0.06 85);
+  --tema-retro-eticheta-slab: oklch(0.78 0.05 85);
+  --tema-retro-chihlimbar: oklch(0.82 0.14 70);
+
+  /* Dunga de sub titlu: cinci benzi, ca pe carcasele din anii '80. */
+  --tema-retro-dunga-1: oklch(0.72 0.19 28);
+  --tema-retro-dunga-2: oklch(0.78 0.16 58);
+  --tema-retro-dunga-3: oklch(0.87 0.16 95);
+  --tema-retro-dunga-4: oklch(0.8 0.18 145);
+  --tema-retro-dunga-5: oklch(0.72 0.14 235);
+}
+
 @theme inline {
   --color-fundal: var(--tema-fundal);
   --color-suprafata: var(--tema-suprafata);
@@ -52,6 +78,22 @@
   --color-text-slab: var(--tema-text-slab);
   --color-accent: var(--tema-accent);
   --color-accent-text: var(--tema-accent-text);
+  --color-retro-lemn: var(--tema-retro-lemn);
+  --color-retro-carcasa: var(--tema-retro-carcasa);
+  --color-retro-carcasa-slab: var(--tema-retro-carcasa-slab);
+  --color-retro-contur: var(--tema-retro-contur);
+  --color-retro-ecran: var(--tema-retro-ecran);
+  --color-retro-ecran-slab: var(--tema-retro-ecran-slab);
+  --color-retro-fosfor: var(--tema-retro-fosfor);
+  --color-retro-fosfor-slab: var(--tema-retro-fosfor-slab);
+  --color-retro-eticheta: var(--tema-retro-eticheta);
+  --color-retro-eticheta-slab: var(--tema-retro-eticheta-slab);
+  --color-retro-chihlimbar: var(--tema-retro-chihlimbar);
+  --color-retro-dunga-1: var(--tema-retro-dunga-1);
+  --color-retro-dunga-2: var(--tema-retro-dunga-2);
+  --color-retro-dunga-3: var(--tema-retro-dunga-3);
+  --color-retro-dunga-4: var(--tema-retro-dunga-4);
+  --color-retro-dunga-5: var(--tema-retro-dunga-5);
   --radius-tema: var(--tema-raza);
   --font-sans: var(--tema-font);
   --font-mono: var(--tema-font-mono);

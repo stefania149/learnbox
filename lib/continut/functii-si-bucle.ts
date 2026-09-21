@@ -35,6 +35,9 @@ export type CapitolLivrat = {
   niveluri: NivelLivrat[];
 };
 
+/** Cursul din care face parte capitolul. Pe ecran apare ca nume propriu. */
+export const MATERIE = "Python";
+
 export const CAPITOL: CapitolLivrat = {
   nume: "Funcții și bucle",
   niveluri: [

@@ -13,7 +13,7 @@
 import { asc, eq, inArray } from "drizzle-orm";
 import { deschideBaza } from "./client";
 import { capitol, exercitiu, materie, nivel, samantaAplicata } from "./schema";
-import { CAPITOL } from "@/lib/continut/functii-si-bucle";
+import { CAPITOL, MATERIE } from "@/lib/continut/functii-si-bucle";
 import type { CazTest } from "@/lib/exercitii/motor";
 import type { EcranBriefing } from "@/lib/continut/functii-si-bucle";
 
@@ -21,7 +21,7 @@ export type { EcranBriefing };
 export type Exercitiu = typeof exercitiu.$inferSelect;
 export type Nivel = typeof nivel.$inferSelect;
 
-export const NUME_MATERIE = "Python";
+export const NUME_MATERIE = MATERIE;
 
 /** Numele pachetului. Se schimbă când se schimbă conținutul livrat. */
 const PACHET = "python-functii-si-bucle-1";

@@ -90,5 +90,11 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   nicăieri rând cu rând. Ecranul de progres le arată ca sumă, nu ca listă. Dacă
   Arhiva (pasul 15) are nevoie de ele una câte una, trebuie un tabel de
   evenimente (`PLAN.md` Î-15).
+- **Coperta are paleta ei.** Ecranul de intrare (`app/page.tsx`,
+  `componente/terminal.tsx`) e desenat ca un monitor din anii '80 și
+  folosește tokenurile `--tema-retro-*`, care nu se schimbă cu schema
+  sistemului. Nu deschide baza de date și nu pornește Python: tot ce scrie
+  pe el vine din capitolul livrat, ca să apară instantaneu. Vezi `PLAN.md`
+  Î-16.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.

@@ -524,3 +524,9 @@ Nu e terminat până nu trec toate cinci:
 - **Î-13.** Cum se socotește `nivel_jucator` din XP-ul unei materii? Până se decide, rămâne `1` și nu apare pe ecran; XP-ul se adună, atât. *Provizoriu: nedecis.*
 - **Î-14.** Când se consideră terminată o lecție, ca să se deblocheze următoarea? *Provizoriu: când fiecare exercițiu al ei a fost încercat măcar o dată — nu când toate trec. XP-ul măsoară efortul (§8), deci nici deblocarea nu se leagă de corectitudine.*
 - **Î-15.** Unde stau evenimentele de XP care nu sunt încercări — briefingul citit, bonusul de revenire, mai târziu testele? §11 n-are loc pentru ele, fiindcă `incercare` cere un exercițiu sau un test. *Provizoriu: doar în totaluri (`xp_total`, `progres_nivel.xp_obtinut`), cu două steaguri în schemă (`progres_nivel.briefing_citit`, `setari.vazut_ultima_data`). Un tabel `eveniment_xp` se adaugă dacă Arhiva are nevoie de istoric.*
+- **Î-16.** Coperta (ecranul de intrare) e desenată ca un calculator vechi și
+  are paleta ei, fixă: nu urmează nici schema luminoasă sau întunecată a
+  sistemului, nici tema aleasă de utilizator. Rămâne așa, sau se schimbă
+  odată cu tema? *Provizoriu: rămâne fixă, fiindcă e un obiect desenat, nu un
+  ecran de lucru. Tokenurile `--tema-retro-*` din `app/globals.css` devin
+  paleta temei „terminal” (§10) la pasul 24.*
