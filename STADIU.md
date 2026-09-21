@@ -15,7 +15,7 @@ GitHub Pages. **Aici e linia de demo.**
 
 | # | Pas | Status | Notițe |
 |---|---|---|---|
-| 1 | Next.js export static + GitHub Pages + publicare automată la push | Neinceput | |
+| 1 | Next.js export static + GitHub Pages + publicare automată la push | In Lucru | Local e gata și verificat pe un export cu cale de bază. Rămâne crearea repo-ului pe GitHub, push pe `main` și pornirea Pages pe „GitHub Actions". |
 | 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Neinceput | |
 | 3 | Pyodide în Web Worker, cu cronometru și repornire | Neinceput | Înaintea oricărei interfețe — vezi `PLAN.md` §13 |
 | 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Neinceput | |
@@ -64,4 +64,8 @@ GitHub Pages. **Aici e linia de demo.**
 
 Limitări de prototip, de reparat înainte de a considera produsul gata.
 
-*(niciuna încă — proiectul n-a început)*
+- **Ecranul „Starea browserului" e provizoriu.** Există ca să aibă pasul 1 o
+  acțiune reală și ca să verifice din interfață ce cer pașii 2, 3 și 10. Se
+  rescrie sau dispare când apare navigarea de joc (pasul 6).
+- **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
+  ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.
