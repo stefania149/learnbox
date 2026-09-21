@@ -126,6 +126,9 @@ export default function EcranSetari() {
         <ButonLegatura href="/" fel="secundar">
           Înapoi
         </ButonLegatura>
+        <ButonLegatura href="/copie/" fel="secundar">
+          Copie de progres
+        </ButonLegatura>
         <ButonLegatura href="/stare/" fel="secundar">
           Starea datelor
         </ButonLegatura>

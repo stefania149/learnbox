@@ -23,7 +23,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Terminat | Deblocarea lecțiilor a venit tot aici, altfel harta n-avea ce arăta; ecranul de progres și restul XP-ului rămân la pasul 7. O lecție se termină când ai **încercat** fiecare exercițiu (`PLAN.md` Î-14). |
 | 7 | XP, deblocare de lecții, ecranul de progres | Terminat | Deblocarea venise la pasul 6. XP-ul care nu vine dintr-o încercare (briefing, revenire) trăiește doar în totaluri, nu are rând propriu — vezi `PLAN.md` Î-15. Testele de lecție și de capitol din tabelul §8 vin la pasul 14. |
 | 8 | Un capitol de Python scris de mână, cap-coadă | Terminat | Capitolul „Funcții și bucle”: 5 lecții, 16 ecrane de briefing, 18 exerciții, în `lib/continut/`. `npm run continut:verifica` rulează Python adevărat peste tot capitolul: soluția trebuie să treacă toate cazurile, codul de pornire nu. |
-| 9 | Export/import progres în fișier | Neinceput | |
+| 9 | Export/import progres în fișier | Terminat | Ecranul `/copie/`, cu fișier JSON `tutore-progres-<data>.json`. Citirea e aditivă: nu șterge nimic, sare încercările pe care le ai deja (același exercițiu, aceeași clipă), iar XP-ul iese cel mai mare dintre cel de dinainte, cel din fișier și cel reconstituit din bază. Fișierul nu conține cursul, deci se leagă de exerciții după enunț. |
 | 10 | PWA: instalabil, cu iconiță, offline | Neinceput | |
 
 ## Faza 2 — Conținutul
@@ -81,6 +81,9 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   cheie; din același motiv, ordinea exercițiilor în lecție se ia din fișierul
   de conținut, nu din `id`. Un enunț rescris înseamnă un exercițiu nou, nu unul
   actualizat. Se repară la pasul 11, cu formatul de curs livrat.
+  Copia de progres (pasul 9) suferă de același lucru: o încercare din fișier
+  al cărei enunț s-a rescris între timp nu-și mai găsește exercițiul și se
+  numără la „exerciții necunoscute", nu se pierde tăcut.
 - **Preîncărcarea rutelor, reparată la build.** Next 16 scrie bucata de
   preîncărcare într-un folder `__next.<ruta>/`, dar browserul o cere ca fișier
   `__next.<ruta>.__PAGE__.txt`. `scripts/repara-preincarcarea.mjs` o pune și în

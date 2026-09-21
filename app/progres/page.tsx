@@ -83,6 +83,9 @@ export default function EcranProgres() {
 
       <BaraActiuni>
         <ButonLegatura href="/curs/">Înapoi la curs</ButonLegatura>
+        <ButonLegatura href="/copie/" fel="secundar">
+          Copie de progres
+        </ButonLegatura>
         <ButonLegatura href="/" fel="secundar">
           Acasă
         </ButonLegatura>
