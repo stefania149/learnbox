@@ -130,7 +130,7 @@ export default function EcranSetari() {
           Copie de progres
         </ButonLegatura>
         <ButonLegatura href="/stare/" fel="secundar">
-          Starea datelor
+          Aplicația
         </ButonLegatura>
       </BaraActiuni>
     </Ecran>

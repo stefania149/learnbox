@@ -537,3 +537,10 @@ Nu e terminat până nu trec toate cinci:
   conturi, adică exact ce e pe lista închisă din §3. *Provizoriu: nume local,
   atât. Dacă profilul trebuie arătat cuiva, drumul e fișierul de export de la
   pasul 9, nu un server.*
+- **Î-18.** Ce se ia în depozit la instalare? Exportul are ~48 MB, din care
+  31 MB sunt Pyodide și PGlite; o instalare care le cere pe toate dinainte ar
+  însemna 48 MB pentru un buton. *Provizoriu: coaja (paginile, CSS-ul, JS-ul,
+  2,3 MB) se ia la instalare; motoarele se rețin pe drum, pe măsură ce le
+  ceri, iar ecranul „Aplicația" are un buton care le aduce dinadins. Depozitul
+  coajei se aruncă la fiecare versiune nouă, al motoarelor numai când se
+  schimbă ele.*

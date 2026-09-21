@@ -1,0 +1,8 @@
+<!--
+  Varianta obișnuită: colțuri rotunjite desenate de noi, fiindcă aici nimeni
+  nu decupează. Același semn ca în `app/icon.svg`, la 512.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tutore">
+  <rect width="512" height="512" rx="128" fill="#2f5bd0"/>
+  <path d="M144 176h224M256 176v208" stroke="#ffffff" stroke-width="51" stroke-linecap="round"/>
+</svg>

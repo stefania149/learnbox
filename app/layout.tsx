@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { InregistrareServiceWorker } from "@/componente/pwa";
 
 const descriere =
   "Un joc de învățat, care rulează întreg în browser: Python, exerciții cu " +
@@ -19,7 +20,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ro" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <InregistrareServiceWorker />
+      </body>
     </html>
   );
 }

@@ -31,7 +31,7 @@ const MENIU: ElementMeniu[] = [
   { href: "/progres/", eticheta: "Progres", icoana: "info" },
   { href: "/python/", eticheta: "Scrie cod", icoana: "cod" },
   { href: "/setari/", eticheta: "Setări", icoana: "unealta" },
-  { href: "/stare/", eticheta: "Stare", icoana: "monitor" },
+  { href: "/stare/", eticheta: "Aplicația", icoana: "monitor" },
 ];
 
 export default function Acasa() {
