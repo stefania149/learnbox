@@ -19,9 +19,9 @@ GitHub Pages. **Aici e linia de demo.**
 | 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Terminat | Baza rulează într-un Web Worker, din fișiere statice — Turbopack rupe PGlite dacă îl împachetează. Tabelele pentru import și asistent vin în faza 3 (`PLAN.md` Î-12). |
 | 3 | Pyodide în Web Worker, cu cronometru și repornire | Terminat | Fir separat, 5 secunde de răbdare, omorât și repornit la depășire. Servit din fișiere statice, ca PGlite. |
 | 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Terminat | Cazurile se anunță unul câte unul, deci ce a trecut înainte de cronometru rămâne câștigat. Determinismul din §7 stă într-un preludiu Python, nu în enunț. |
-| 5 | Editorul de cod (CodeMirror) + consola de rezultat | Neinceput | |
-| 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Neinceput | |
-| 7 | XP, deblocare de lecții, ecranul de progres | Neinceput | |
+| 5 | Editorul de cod (CodeMirror) + consola de rezultat | Terminat | Colorarea sintaxei trece prin tokenuri de temă, ca restul. `Tab` mută focalizarea, nu indentează — altfel cine merge din tastatură rămâne prins în editor. |
+| 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Terminat | Deblocarea lecțiilor a venit tot aici, altfel harta n-avea ce arăta; ecranul de progres și restul XP-ului rămân la pasul 7. O lecție se termină când ai **încercat** fiecare exercițiu (`PLAN.md` Î-14). |
+| 7 | XP, deblocare de lecții, ecranul de progres | Terminat | Deblocarea venise la pasul 6. XP-ul care nu vine dintr-o încercare (briefing, revenire) trăiește doar în totaluri, nu are rând propriu — vezi `PLAN.md` Î-15. Testele de lecție și de capitol din tabelul §8 vin la pasul 14. |
 | 8 | Un capitol de Python scris de mână, cap-coadă | Neinceput | |
 | 9 | Export/import progres în fișier | Neinceput | |
 | 10 | PWA: instalabil, cu iconiță, offline | Neinceput | |
@@ -74,13 +74,19 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
 - **Exportul are ~48 MB**: ~17 MB PGlite, ~13 MB Pyodide, restul WASM
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie.
-- **Ecranul „Rulare Python" e provizoriu.** Zonă de text simplă, ca pasul 3 să
-  aibă o acțiune. Se înlocuiește cu editorul și consola la pasul 5.
-- **Cele trei exerciții demo se seamănă o singură dată**, la prima deschidere
-  (`lib/date/seminte.ts`). Dacă li se schimbă textul sau cazurile, baza locală
-  păstrează versiunea veche — `incercare` trimite la ele și nu se rescrie.
-  Capitolul adevărat vine la pasul 8, cu formatul de curs livrat.
-- **Ecranul „Exerciții" e provizoriu.** Zonă de text și trei exerciții într-o
-  listă, cât să aibă motorul o acțiune. Editorul vine la pasul 5, navigarea la 6.
+- **Conținutul livrat vine în pachete numerotate** (`lib/date/seminte.ts`), ca
+  migrările: un pachet intră o dată și nu se rescrie, fiindcă `incercare`
+  trimite la exercițiile lui. Conținutul nou se adaugă ca pachet nou. Cele două
+  lecții de acum sunt schelărie pentru navigare — capitolul adevărat vine la
+  pasul 8, cu formatul de curs livrat.
+- **Preîncărcarea rutelor, reparată la build.** Next 16 scrie bucata de
+  preîncărcare într-un folder `__next.<ruta>/`, dar browserul o cere ca fișier
+  `__next.<ruta>.__PAGE__.txt`. `scripts/repara-preincarcarea.mjs` o pune și în
+  forma cerută; de scos când Next repară numele.
+- **XP-ul din afara încercărilor nu are istoric.** Briefingul citit și bonusul
+  de revenire se adună în `xp_total` și în `progres_nivel`, dar nu se scriu
+  nicăieri rând cu rând. Ecranul de progres le arată ca sumă, nu ca listă. Dacă
+  Arhiva (pasul 15) are nevoie de ele una câte una, trebuie un tabel de
+  evenimente (`PLAN.md` Î-15).
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.

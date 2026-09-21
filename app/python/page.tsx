@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Ecran,
   AntetEcran,
@@ -9,6 +9,8 @@ import {
   Panou,
 } from "@/componente/ecran";
 import { Buton, ButonLegatura } from "@/componente/buton";
+import { EditorCod } from "@/componente/editor-cod";
+import { Consola, MesajCronometru, Traceback } from "@/componente/consola";
 import { python, RABDARE_MS, type Rezultat } from "@/lib/python/client";
 import { mesajEroare } from "@/lib/date/erori";
 
@@ -39,7 +41,6 @@ type Stare =
 export default function EcranPython() {
   const [cod, setCod] = useState(COD_INITIAL);
   const [stare, setStare] = useState<Stare>({ fel: "nepornit" });
-  const zonaCod = useRef<HTMLTextAreaElement>(null);
 
   async function ruleaza() {
     const motor = python();
@@ -58,7 +59,6 @@ export default function EcranPython() {
 
   function puneBucla() {
     setCod(BUCLA_FARA_SFARSIT);
-    zonaCod.current?.focus();
   }
 
   const seLucreaza = stare.fel === "se-pregateste" || stare.fel === "ruleaza";
@@ -71,22 +71,13 @@ export default function EcranPython() {
       />
       <ContinutEcran>
         <Panou>
-          <label htmlFor="cod" className="text-sm font-medium">
-            Cod Python
-          </label>
-          <textarea
-            id="cod"
-            ref={zonaCod}
-            value={cod}
-            onChange={(e) => setCod(e.target.value)}
-            spellCheck={false}
-            rows={12}
-            className="w-full rounded-tema border border-contur bg-fundal p-4 font-mono text-sm text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          <EditorCod
+            eticheta="Cod Python"
+            valoare={cod}
+            onSchimba={setCod}
+            dezactivat={seLucreaza}
+            ajutor={`O rulare are ${RABDARE_MS / 1000} secunde. Dacă le depășește, firul se oprește și repornește singur — fila nu îngheață. Tab te scoate din editor; indentarea se face cu spații.`}
           />
-          <p className="text-sm text-text-slab">
-            O rulare are {RABDARE_MS / 1000} secunde. Dacă le depășește, firul se
-            oprește și repornește singur — fila nu îngheață.
-          </p>
         </Panou>
 
         <Panou titlu="Rezultat">
@@ -147,11 +138,7 @@ export default function EcranPython() {
 function VeziRezultat({ rezultat }: { rezultat: Rezultat }) {
   return (
     <div className="flex flex-col gap-4">
-      {rezultat.iesire.length > 0 ? (
-        <pre className="overflow-x-auto whitespace-pre-wrap rounded-tema bg-fundal p-4 font-mono text-sm">
-          {rezultat.iesire.map((l) => l.text).join("\n")}
-        </pre>
-      ) : null}
+      <Consola iesire={rezultat.iesire} gol="Codul n-a tipărit nimic." />
 
       {rezultat.fel === "gata" ? (
         <p className="text-sm text-text-slab">
@@ -161,23 +148,10 @@ function VeziRezultat({ rezultat }: { rezultat: Rezultat }) {
         </p>
       ) : null}
 
-      {rezultat.fel === "eroare" ? (
-        <>
-          <p className="text-sm text-text-slab">
-            Python s-a oprit și a explicat de ce:
-          </p>
-          <pre className="overflow-x-auto whitespace-pre-wrap rounded-tema border border-contur p-4 font-mono text-sm">
-            {rezultat.eroare}
-          </pre>
-        </>
-      ) : null}
+      {rezultat.fel === "eroare" ? <Traceback text={rezultat.eroare} /> : null}
 
       {rezultat.fel === "timp-expirat" ? (
-        <p className="text-text-slab">
-          Codul tău a rulat {rezultat.secunde} secunde și nu s-a oprit. Probabil
-          ai o buclă care nu se termină — verifică dacă ceva chiar schimbă
-          condiția.
-        </p>
+        <MesajCronometru secunde={rezultat.secunde} />
       ) : null}
     </div>
   );

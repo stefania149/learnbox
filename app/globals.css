@@ -14,6 +14,15 @@
   --tema-raza: 0.75rem;
   --tema-font: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
   --tema-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
+
+  /* Colorarea codului. Tot tokenuri: editorul nu știe ce temă e activă, iar o
+     temă „terminal" (§10) schimbă numai valorile de aici. */
+  --tema-cod-cuvant: oklch(0.45 0.16 300);
+  --tema-cod-nume: oklch(0.42 0.14 258);
+  --tema-cod-sir: oklch(0.44 0.12 155);
+  --tema-cod-numar: oklch(0.48 0.13 60);
+  --tema-cod-comentariu: oklch(0.5 0.02 265);
+  --tema-cod-rand-activ: oklch(0.95 0.006 265);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +34,13 @@
     --tema-text-slab: oklch(0.72 0.012 265);
     --tema-accent: oklch(0.72 0.13 258);
     --tema-accent-text: oklch(0.18 0.012 265);
+
+    --tema-cod-cuvant: oklch(0.78 0.13 300);
+    --tema-cod-nume: oklch(0.8 0.11 258);
+    --tema-cod-sir: oklch(0.78 0.11 155);
+    --tema-cod-numar: oklch(0.82 0.11 70);
+    --tema-cod-comentariu: oklch(0.66 0.02 265);
+    --tema-cod-rand-activ: oklch(0.26 0.014 265);
   }
 }
 

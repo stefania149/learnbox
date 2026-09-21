@@ -81,6 +81,9 @@ export const progresNivel = pgTable("progres_nivel", {
   stare: text("stare").notNull().default("neinceput"),
   xpObtinut: integer("xp_obtinut").notNull().default(0),
   terminatLa: timestamp("terminat_la", { withTimezone: true }),
+  // XP-ul pentru briefing se dă o dată (`PLAN.md` §8), deci trebuie ținut minte
+  // separat de starea lecției, care merge mai departe.
+  briefingCitit: boolean("briefing_citit").notNull().default(false),
 });
 
 /**
@@ -120,6 +123,18 @@ export const stapanire = pgTable("stapanire", {
   }),
 });
 
+/**
+ * Ce pachet de conținut livrat a intrat deja în baza asta. Funcționează ca
+ * migrările: un pachet se aplică o dată și nu se rescrie, fiindcă `incercare`
+ * trimite la exercițiile lui.
+ */
+export const samantaAplicata = pgTable("samanta_aplicata", {
+  nume: text("nume").primaryKey(),
+  aplicataLa: timestamp("aplicata_la", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 // —— Utilizatorul ——————————————————————————————————————————————
 
 /** Un singur rând, `id = 1`. */
@@ -132,6 +147,8 @@ export const setari = pgTable(
     registruTon: text("registru_ton").notNull().default("neutru"),
     materieActiva: integer("materie_activa").references(() => materie.id),
     modelDescarcat: boolean("model_descarcat").notNull().default(false),
+    // Pentru bonusul de revenire (`PLAN.md` §8), care se dă tăcut.
+    vazutUltimaData: timestamp("vazut_ultima_data", { withTimezone: true }),
   },
   (t) => [unique("setari_rand_unic").on(t.id)],
 );

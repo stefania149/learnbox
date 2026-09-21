@@ -17,18 +17,21 @@ export default function Acasa() {
           </p>
           <p className="text-text-slab">
             Primul curs în lucru este <strong className="text-text">Python</strong>.
-            Trei exerciții se pot face deja: scrii cod, el rulează pe cazuri de
-            test și primești raportul, caz cu caz.
+            Are capitole și lecții: citești briefingul, scrii cod, iar cazurile
+            de test spun cât a ieșit. Lecțiile se deschid pe rând.
           </p>
         </Panou>
       </ContinutEcran>
       <BaraActiuni>
-        <ButonLegatura href="/exercitii/">Fă un exercițiu</ButonLegatura>
-        <ButonLegatura href="/stare/" fel="secundar">
-          Verifică browserul
+        <ButonLegatura href="/curs/">Intră în curs</ButonLegatura>
+        <ButonLegatura href="/progres/" fel="secundar">
+          Progres
         </ButonLegatura>
         <ButonLegatura href="/python/" fel="secundar">
-          Rulare Python
+          Scrie cod liber
+        </ButonLegatura>
+        <ButonLegatura href="/stare/" fel="secundar">
+          Verifică browserul
         </ButonLegatura>
         <ButonLegatura href="/setari/" fel="secundar">
           Setări
