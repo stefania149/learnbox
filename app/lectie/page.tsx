@@ -373,9 +373,11 @@ function EcranLectie() {
             din {exercitii.length} exerciții.
           </p>
           <p className="text-text-slab">
-            {toateIncercate
-              ? "Lecția e terminată și următoarea s-a deschis. Poți să te întorci oricând la exercițiile de aici — fiecare reluare se scrie ca încercare nouă."
-              : "Lecția rămâne deschisă. Se termină când ai încercat fiecare exercițiu — nu când le nimerești pe toate."}
+            {!toateIncercate
+              ? "Lecția rămâne deschisă. Se termină când ai încercat fiecare exercițiu — nu când le nimerești pe toate."
+              : urmatoarea
+                ? "Lecția e terminată și următoarea s-a deschis. Poți să te întorci oricând la exercițiile de aici — fiecare reluare se scrie ca încercare nouă."
+                : "Ai încercat tot ce are capitolul ăsta. Poți să te întorci oricând la orice exercițiu — fiecare reluare se scrie ca încercare nouă."}
           </p>
         </Panou>
 

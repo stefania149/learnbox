@@ -18,7 +18,12 @@ import {
   progresNivel,
   setari,
 } from "./schema";
-import { aplicaSeminte, type Exercitiu, type Nivel } from "./seminte";
+import {
+  aplicaSeminte,
+  ordineaLivrata,
+  type Exercitiu,
+  type Nivel,
+} from "./seminte";
 import { adaugaXp, citesteXpTotal } from "./incercari";
 import { PAUZA_ORE, XP } from "@/lib/exercitii/xp";
 
@@ -178,11 +183,9 @@ export async function citesteLectie(nivelId: number): Promise<Lectie | null> {
   const gasit = await baza.select().from(nivel).where(eq(nivel.id, nivelId));
   if (!gasit[0]) return null;
 
-  const exercitii = await baza
-    .select()
-    .from(exercitiu)
-    .where(eq(exercitiu.nivelId, nivelId))
-    .orderBy(asc(exercitiu.id));
+  const exercitii = (
+    await baza.select().from(exercitiu).where(eq(exercitiu.nivelId, nivelId))
+  ).sort((a, b) => ordineaLivrata(a.enunt) - ordineaLivrata(b.enunt));
 
   const incercari = await baza
     .select({ exercitiuId: incercare.exercitiuId })

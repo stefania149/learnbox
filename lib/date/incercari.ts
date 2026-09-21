@@ -42,6 +42,23 @@ export async function citesteXpTotal(materieId: number): Promise<number> {
   return randuri[0]?.xp ?? 0;
 }
 
+/** Adaugă XP la totalul materiei. Niciodată cu număr negativ (regula 4). */
+export async function adaugaXp(
+  materieId: number,
+  xp: number,
+): Promise<number> {
+  const { baza } = await deschideBaza();
+  const [rand] = await baza
+    .insert(xpTotal)
+    .values({ materieId, xp })
+    .onConflictDoUpdate({
+      target: xpTotal.materieId,
+      set: { xp: sql`${xpTotal.xp} + ${xp}` },
+    })
+    .returning();
+  return rand.xp;
+}
+
 /**
  * Scrie încercarea și adaugă XP-ul la totalul materiei. Întoarce socoteala, ca
  * ecranul să poată arăta din ce s-a adunat.
@@ -76,14 +93,7 @@ export async function scrieIncercare({
     xp: socoteala.total,
   });
 
-  const [randXp] = await baza
-    .insert(xpTotal)
-    .values({ materieId, xp: socoteala.total })
-    .onConflictDoUpdate({
-      target: xpTotal.materieId,
-      set: { xp: sql`${xpTotal.xp} + ${socoteala.total}` },
-    })
-    .returning();
+  const xpMaterie = await adaugaXp(materieId, socoteala.total);
 
-  return { socoteala, xpMaterie: randXp.xp };
+  return { socoteala, xpMaterie };
 }

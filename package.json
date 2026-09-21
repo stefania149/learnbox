@@ -9,7 +9,8 @@
     "build": "next build && node scripts/repara-preincarcarea.mjs",
     "start": "next start",
     "lint": "eslint",
-    "date:genereaza": "drizzle-kit generate && node scripts/impacheteaza-migrari.mjs"
+    "date:genereaza": "drizzle-kit generate && node scripts/impacheteaza-migrari.mjs",
+    "continut:verifica": "node --experimental-strip-types scripts/verifica-continut.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",

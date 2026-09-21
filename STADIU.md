@@ -22,7 +22,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 5 | Editorul de cod (CodeMirror) + consola de rezultat | Terminat | Colorarea sintaxei trece prin tokenuri de temă, ca restul. `Tab` mută focalizarea, nu indentează — altfel cine merge din tastatură rămâne prins în editor. |
 | 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Terminat | Deblocarea lecțiilor a venit tot aici, altfel harta n-avea ce arăta; ecranul de progres și restul XP-ului rămân la pasul 7. O lecție se termină când ai **încercat** fiecare exercițiu (`PLAN.md` Î-14). |
 | 7 | XP, deblocare de lecții, ecranul de progres | Terminat | Deblocarea venise la pasul 6. XP-ul care nu vine dintr-o încercare (briefing, revenire) trăiește doar în totaluri, nu are rând propriu — vezi `PLAN.md` Î-15. Testele de lecție și de capitol din tabelul §8 vin la pasul 14. |
-| 8 | Un capitol de Python scris de mână, cap-coadă | Neinceput | |
+| 8 | Un capitol de Python scris de mână, cap-coadă | Terminat | Capitolul „Funcții și bucle”: 5 lecții, 16 ecrane de briefing, 18 exerciții, în `lib/continut/`. `npm run continut:verifica` rulează Python adevărat peste tot capitolul: soluția trebuie să treacă toate cazurile, codul de pornire nu. |
 | 9 | Export/import progres în fișier | Neinceput | |
 | 10 | PWA: instalabil, cu iconiță, offline | Neinceput | |
 
@@ -64,9 +64,9 @@ GitHub Pages. **Aici e linia de demo.**
 
 Limitări de prototip, de reparat înainte de a considera produsul gata.
 
-- **Ecranul „Starea browserului" e provizoriu.** Există ca să aibă pasul 1 o
-  acțiune reală și ca să verifice din interfață ce cer pașii 2, 3 și 10. Se
-  rescrie sau dispare când apare navigarea de joc (pasul 6).
+- **Ecranul „Starea browserului" e provizoriu.** Există ca să verifice din
+  interfață ce cer pașii 2, 3 și 10. Nu mai e în drumul jocului, dar a rămas —
+  se rescrie sau dispare când ajungem la PWA (pasul 10).
 - **PGlite nu trece prin împachetător.** `scripts/copiaza-vendor.mjs` îl copiază
   în `public/vendor/` la fiecare build, fiindcă Turbopack fie pierde legătura
   către `instantiateWasm`, fie (cu `transpilePackages`) bagă cod care cere
@@ -74,11 +74,13 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
 - **Exportul are ~48 MB**: ~17 MB PGlite, ~13 MB Pyodide, restul WASM
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie.
-- **Conținutul livrat vine în pachete numerotate** (`lib/date/seminte.ts`), ca
-  migrările: un pachet intră o dată și nu se rescrie, fiindcă `incercare`
-  trimite la exercițiile lui. Conținutul nou se adaugă ca pachet nou. Cele două
-  lecții de acum sunt schelărie pentru navigare — capitolul adevărat vine la
-  pasul 8, cu formatul de curs livrat.
+- **Conținutul livrat n-are chei stabile.** Capitolul stă în
+  `lib/continut/functii-si-bucle.ts` și intră în bază printr-un pachet aplicat
+  o dată (`lib/date/seminte.ts`). Potrivirea cu ce e deja în bază se face după
+  numele lecției și după enunțul exercițiului, fiindcă schema n-are coloană de
+  cheie; din același motiv, ordinea exercițiilor în lecție se ia din fișierul
+  de conținut, nu din `id`. Un enunț rescris înseamnă un exercițiu nou, nu unul
+  actualizat. Se repară la pasul 11, cu formatul de curs livrat.
 - **Preîncărcarea rutelor, reparată la build.** Next 16 scrie bucata de
   preîncărcare într-un folder `__next.<ruta>/`, dar browserul o cere ca fișier
   `__next.<ruta>.__PAGE__.txt`. `scripts/repara-preincarcarea.mjs` o pune și în

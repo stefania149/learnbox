@@ -16,7 +16,14 @@ export const XP = {
   toateCazurile: 15,
   /** Toate cazurile trec de la prima încercare. */
   dinPrima: 10,
+  /** Ai citit briefingul unei lecții — mic, garantat, o singură dată. */
+  briefing: 3,
+  /** Te-ai întors după o pauză. Se dă tăcut, nu se anunță. */
+  revenire: 5,
 } as const;
+
+/** După câte ore de pauză se dă bonusul de revenire. */
+export const PAUZA_ORE = 16;
 
 export type Parte = { eticheta: string; xp: number };
 
