@@ -147,6 +147,9 @@ export const setari = pgTable(
     registruTon: text("registru_ton").notNull().default("neutru"),
     materieActiva: integer("materie_activa").references(() => materie.id),
     modelDescarcat: boolean("model_descarcat").notNull().default(false),
+    // Numele de pe ecranul de profil. E al tău și stă pe calculatorul tău:
+    // nu e cont, nu pleacă nicăieri, și poate lipsi.
+    numeAfisat: text("nume_afisat"),
     // Pentru bonusul de revenire (`PLAN.md` §8), care se dă tăcut.
     vazutUltimaData: timestamp("vazut_ultima_data", { withTimezone: true }),
   },

@@ -70,6 +70,22 @@
   --tema-retro-dunga-5: oklch(0.72 0.14 235);
 }
 
+/* Dulapul din vestiar: ecranul de profil. Alt obiect, altă paletă — metal
+   gri, becul de sus, hârtie și scris de mână cu galben. Tot tokenuri. */
+:root {
+  --tema-dulap-camera: oklch(0.24 0.004 255);
+  --tema-dulap-metal: oklch(0.56 0.006 255);
+  --tema-dulap-metal-slab: oklch(0.46 0.006 255);
+  --tema-dulap-margine: oklch(0.68 0.006 255);
+  --tema-dulap-interior: oklch(0.32 0.005 255);
+  --tema-dulap-afis: oklch(0.38 0.004 255);
+  --tema-dulap-raft: oklch(0.62 0.008 250);
+  --tema-dulap-lampa: oklch(0.96 0.06 95);
+  --tema-dulap-scris: oklch(0.86 0.12 88);
+  --tema-dulap-text: oklch(0.95 0.004 255);
+  --tema-dulap-text-slab: oklch(0.8 0.004 255);
+}
+
 @theme inline {
   --color-fundal: var(--tema-fundal);
   --color-suprafata: var(--tema-suprafata);
@@ -94,6 +110,17 @@
   --color-retro-dunga-3: var(--tema-retro-dunga-3);
   --color-retro-dunga-4: var(--tema-retro-dunga-4);
   --color-retro-dunga-5: var(--tema-retro-dunga-5);
+  --color-dulap-camera: var(--tema-dulap-camera);
+  --color-dulap-metal: var(--tema-dulap-metal);
+  --color-dulap-metal-slab: var(--tema-dulap-metal-slab);
+  --color-dulap-margine: var(--tema-dulap-margine);
+  --color-dulap-interior: var(--tema-dulap-interior);
+  --color-dulap-afis: var(--tema-dulap-afis);
+  --color-dulap-raft: var(--tema-dulap-raft);
+  --color-dulap-lampa: var(--tema-dulap-lampa);
+  --color-dulap-scris: var(--tema-dulap-scris);
+  --color-dulap-text: var(--tema-dulap-text);
+  --color-dulap-text-slab: var(--tema-dulap-text-slab);
   --radius-tema: var(--tema-raza);
   --font-sans: var(--tema-font);
   --font-mono: var(--tema-font-mono);

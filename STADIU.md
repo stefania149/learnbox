@@ -93,8 +93,13 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
 - **Coperta are paleta ei.** Ecranul de intrare (`app/page.tsx`,
   `componente/terminal.tsx`) e desenat ca un monitor din anii '80 și
   folosește tokenurile `--tema-retro-*`, care nu se schimbă cu schema
-  sistemului. Nu deschide baza de date și nu pornește Python: tot ce scrie
-  pe el vine din capitolul livrat, ca să apară instantaneu. Vezi `PLAN.md`
-  Î-16.
+  sistemului. Textul de pe el vine din capitolul livrat, nu din bază, ca să
+  apară instantaneu. Vezi `PLAN.md` Î-16.
+- **Ecranul de profil n-are pereche în `PLAN.md` §13.** `/profil/` e un dulap
+  de vestiar cu afișul tău înăuntru (`componente/dulap.tsx`), cerut peste
+  plan. Are paleta lui, `--tema-dulap-*`, și arată numai ce e în bază. Numele
+  ales de utilizator stă în `setari.nume_afisat` (migrarea 0003) și nu pleacă
+  nicăieri; partea de „să fiu găsit de alți jucători" nu se poate face fără
+  server (`PLAN.md` §3). Vezi Î-17.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.

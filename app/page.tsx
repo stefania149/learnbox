@@ -27,6 +27,7 @@ const EXERCITII = CAPITOL.niveluri.reduce((s, n) => s + n.exercitii.length, 0);
 const MENIU: ElementMeniu[] = [
   { href: "/", eticheta: "Acasă", icoana: "monitor", activ: true },
   { href: "/curs/", eticheta: "Curs", icoana: "harta" },
+  { href: "/profil/", eticheta: "Profil", icoana: "persoana" },
   { href: "/progres/", eticheta: "Progres", icoana: "info" },
   { href: "/python/", eticheta: "Scrie cod", icoana: "cod" },
   { href: "/setari/", eticheta: "Setări", icoana: "unealta" },

@@ -16,4 +16,8 @@ export const migrari: Migrare[] = [
     nume: "0002_xp_pentru_briefing.sql",
     sql: "ALTER TABLE \"progres_nivel\" ADD COLUMN \"briefing_citit\" boolean DEFAULT false NOT NULL;--> statement-breakpoint\nALTER TABLE \"setari\" ADD COLUMN \"vazut_ultima_data\" timestamp with time zone;",
   },
+  {
+    nume: "0003_nume_afisat.sql",
+    sql: "ALTER TABLE \"setari\" ADD COLUMN \"nume_afisat\" text;",
+  },
 ];

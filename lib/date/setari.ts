@@ -52,3 +52,19 @@ export async function scrieRegistruTon(registru: RegistruTon) {
     .returning();
   return scrise[0];
 }
+
+/**
+ * Numele de pe ecranul de profil. Se șterge scriind un șir gol: profilul
+ * merge și fără nume.
+ */
+export async function scrieNumeAfisat(nume: string) {
+  const { baza } = await deschideBaza();
+  await citesteSetari();
+  const curat = nume.trim().slice(0, 40);
+  const scrise = await baza
+    .update(setari)
+    .set({ numeAfisat: curat === "" ? null : curat })
+    .where(eq(setari.id, 1))
+    .returning();
+  return scrise[0];
+}

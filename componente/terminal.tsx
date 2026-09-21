@@ -190,6 +190,12 @@ const ICOANE = {
       <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" />
     </>
   ),
+  persoana: (
+    <>
+      <circle cx="8" cy="5.5" r="2.5" />
+      <path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+    </>
+  ),
   info: (
     <>
       <circle cx="8" cy="8" r="6" />

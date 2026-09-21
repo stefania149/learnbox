@@ -1,0 +1,1 @@
+ALTER TABLE "setari" ADD COLUMN "nume_afisat" text;

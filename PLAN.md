@@ -530,3 +530,10 @@ Nu e terminat până nu trec toate cinci:
   odată cu tema? *Provizoriu: rămâne fixă, fiindcă e un obiect desenat, nu un
   ecran de lucru. Tokenurile `--tema-retro-*` din `app/globals.css` devin
   paleta temei „terminal” (§10) la pasul 24.*
+- **Î-17.** Cât de departe merge profilul? Ecranul `/profil/` arată ce e în
+  bază — cursul, XP-ul, lecțiile, ce urmează — plus un nume ales de
+  utilizator (`setari.nume_afisat`, migrarea 0003), scris de acolo și păstrat
+  local. Partea socială (să fii găsit de alți jucători) cere server și
+  conturi, adică exact ce e pe lista închisă din §3. *Provizoriu: nume local,
+  atât. Dacă profilul trebuie arătat cuiva, drumul e fișierul de export de la
+  pasul 9, nu un server.*
