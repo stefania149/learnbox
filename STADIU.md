@@ -15,7 +15,7 @@ GitHub Pages. **Aici e linia de demo.**
 
 | # | Pas | Status | Notițe |
 |---|---|---|---|
-| 1 | Next.js export static + GitHub Pages + publicare automată la push | In Lucru | Local e gata și verificat pe un export cu cale de bază. Rămâne crearea repo-ului pe GitHub, push pe `main` și pornirea Pages pe „GitHub Actions". |
+| 1 | Next.js export static + GitHub Pages + publicare automată la push | Terminat | Live la `stefania149.github.io/learnbox/`. Repo-ul e `learnbox`; calea de bază se ia din numele lui, nu e scrisă nicăieri. |
 | 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Neinceput | |
 | 3 | Pyodide în Web Worker, cu cronometru și repornire | Neinceput | Înaintea oricărei interfețe — vezi `PLAN.md` §13 |
 | 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Neinceput | |
