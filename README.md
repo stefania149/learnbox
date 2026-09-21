@@ -1,7 +1,9 @@
-# Tutore
+# learnbox
 
-Un joc de învățat, care rulează întreg în browser. Fără server, fără cont, fără
-costuri.
+A learning game that runs entirely in your browser — Python via Pyodide,
+Postgres via PGlite, no server, no account, no cost.
+
+Aplicația se numește **Tutore** pe ecran; `learnbox` e numele repo-ului.
 
 - `PLAN.md` — ce construim și de ce.
 - `STADIU.md` — unde suntem.
