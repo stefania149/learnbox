@@ -47,6 +47,9 @@ export function Traceback({
       <pre className="overflow-x-auto whitespace-pre-wrap rounded-tema border border-contur p-4 font-mono text-sm">
         {text}
       </pre>
+      {/* Cerut anume, în engleză: singura bucată de interfață care nu e în
+          română. Stă sub traceback, unde codul tocmai a crăpat. */}
+      <p className="text-sm italic text-text-slab">its not right but keep going</p>
     </>
   );
 }

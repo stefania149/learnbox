@@ -101,5 +101,8 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   ales de utilizator stă în `setari.nume_afisat` (migrarea 0003) și nu pleacă
   nicăieri; partea de „să fiu găsit de alți jucători" nu se poate face fără
   server (`PLAN.md` §3). Vezi Î-17.
+- **O linie de interfață e în engleză.** Sub traceback, în
+  `componente/consola.tsx`, scrie „its not right but keep going" — cerută
+  anume. E singura abatere de la „UI 100% română" din `CLAUDE.md`.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.
