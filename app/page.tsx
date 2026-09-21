@@ -23,6 +23,9 @@ export default function Acasa() {
       </ContinutEcran>
       <BaraActiuni>
         <ButonLegatura href="/stare/">Verifică browserul</ButonLegatura>
+        <ButonLegatura href="/python/" fel="secundar">
+          Rulare Python
+        </ButonLegatura>
         <ButonLegatura href="/setari/" fel="secundar">
           Setări
         </ButonLegatura>

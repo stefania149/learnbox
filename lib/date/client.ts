@@ -4,7 +4,7 @@
  *
  * Baza rulează într-un Web Worker, din fișiere statice: `public/baza.worker.js`
  * și copia PGlite din `public/vendor/pglite/`. Împachetătorul nu atinge PGlite
- * — vezi motivele în `scripts/vendor-pglite.mjs`.
+ * — vezi motivele în `scripts/copiaza-vendor.mjs`.
  */
 import type { PGlite } from "@electric-sql/pglite";
 import type { PGliteWorker } from "@electric-sql/pglite/worker";
