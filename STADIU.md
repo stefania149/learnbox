@@ -16,7 +16,7 @@ GitHub Pages. **Aici e linia de demo.**
 | # | Pas | Status | Notițe |
 |---|---|---|---|
 | 1 | Next.js export static + GitHub Pages + publicare automată la push | Terminat | Live la `stefania149.github.io/learnbox/`. Repo-ul e `learnbox`; calea de bază se ia din numele lui, nu e scrisă nicăieri. |
-| 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Neinceput | |
+| 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Terminat | Baza rulează într-un Web Worker, din fișiere statice — Turbopack rupe PGlite dacă îl împachetează. Tabelele pentru import și asistent vin în faza 3 (`PLAN.md` Î-12). |
 | 3 | Pyodide în Web Worker, cu cronometru și repornire | Neinceput | Înaintea oricărei interfețe — vezi `PLAN.md` §13 |
 | 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Neinceput | |
 | 5 | Editorul de cod (CodeMirror) + consola de rezultat | Neinceput | |
@@ -67,5 +67,12 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
 - **Ecranul „Starea browserului" e provizoriu.** Există ca să aibă pasul 1 o
   acțiune reală și ca să verifice din interfață ce cer pașii 2, 3 și 10. Se
   rescrie sau dispare când apare navigarea de joc (pasul 6).
+- **PGlite nu trece prin împachetător.** `scripts/vendor-pglite.mjs` îl copiază
+  în `public/vendor/` la fiecare build, fiindcă Turbopack fie pierde legătura
+  către `instantiateWasm`, fie (cu `transpilePackages`) bagă cod care cere
+  `window` în worker. De reîncercat la o versiune viitoare de Next.
+- **Exportul are ~35 MB**, din care ~28 MB e PGlite (10 MB WASM necomprimat).
+  Se servește comprimat, dar merită văzut dacă se pot scoate extensiile
+  nefolosite din copie.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.

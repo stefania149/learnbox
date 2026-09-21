@@ -520,3 +520,4 @@ Nu e terminat până nu trec toate cinci:
 - **Î-9.** Ce se întâmplă pe telefon? *Provizoriu: PWA-ul merge, dar fără import și fără model. Nu optimizăm la v1.*
 - **Î-10.** Cât e cronometrul pe o rulare de cod? *Provizoriu: 5 secunde. Destul pentru orice exercițiu de curs, scurt cât să nu pară blocaj.*
 - **Î-11.** Se arată cazurile de test înainte de rulare, sau doar după? *Provizoriu: primele două se văd în enunț (ca exemple), restul apar la rulare. Altfel se scrie cod care trece testele fără să rezolve problema.*
+- **Î-12.** Ce dimensiune are vectorul de embedding, și ce model îl produce? Până se decide, tabelele `material`, `chunk`, `concept`, `concept_leg`, `memorie` și `conversatie` nu există în schemă — vin cu migrarea lor în faza 3. *Provizoriu: nedecis.*

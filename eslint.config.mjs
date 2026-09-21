@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Copia PGlite: cod de bibliotecă, nu al nostru.
+    "public/vendor/**",
   ]),
 ]);
 

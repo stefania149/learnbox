@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# PGlite copiat din node_modules la fiecare build (scripts/vendor-pglite.mjs)
+/public/vendor/
