@@ -123,6 +123,18 @@ Nu e terminat până nu trec toate cinci:
 
 Un ecran fără acțiuni nu e un pas terminat.
 
+## Git — nimic fără voie
+
+**Nu se dă `commit` și nu se dă `push` fără să întrebi și să primești „da".**
+Valabil la fiecare pas și la fiecare subpas din plan, fără excepție: și pentru
+un fișier, și pentru o corectură de o linie, și la finalul unei sesiuni care a
+mers bine. Un „da" e pentru comiterea aceea, nu pentru următoarele.
+
+Se lucrează normal în fișiere; la final se arată ce s-a schimbat și se cere
+voie. Tot fără voie: `git push --force`, `reset --hard`, rescrierea istoriei,
+ștergerea de ramuri, crearea unui repo sau a unui remote, publicarea pe GitHub
+Pages.
+
 ## Ce nu se construiește — listă închisă
 
 Motivele sunt în `PLAN.md` §3. Se recitesc înainte de a se rediscuta.
