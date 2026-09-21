@@ -521,3 +521,4 @@ Nu e terminat până nu trec toate cinci:
 - **Î-10.** Cât e cronometrul pe o rulare de cod? *Provizoriu: 5 secunde. Destul pentru orice exercițiu de curs, scurt cât să nu pară blocaj.*
 - **Î-11.** Se arată cazurile de test înainte de rulare, sau doar după? *Provizoriu: primele două se văd în enunț (ca exemple), restul apar la rulare. Altfel se scrie cod care trece testele fără să rezolve problema.*
 - **Î-12.** Ce dimensiune are vectorul de embedding, și ce model îl produce? Până se decide, tabelele `material`, `chunk`, `concept`, `concept_leg`, `memorie` și `conversatie` nu există în schemă — vin cu migrarea lor în faza 3. *Provizoriu: nedecis.*
+- **Î-13.** Cum se socotește `nivel_jucator` din XP-ul unei materii? Până se decide, rămâne `1` și nu apare pe ecran; XP-ul se adună, atât. *Provizoriu: nedecis.*

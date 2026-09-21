@@ -10,10 +10,24 @@ import { loadPyodide } from "./vendor/pyodide/pyodide.mjs";
 /** Se umple la fiecare rulare și se golește la începutul următoarei. */
 let iesire = [];
 
+/** Rularea în curs. Progresul pe cazuri trebuie să știe cui îi aparține. */
+let idCurent = null;
+
 const pyodide = await loadPyodide({
   indexURL: new URL("./vendor/pyodide/", self.location.href).href,
   stdout: (linie) => iesire.push({ flux: "stdout", text: linie }),
   stderr: (linie) => iesire.push({ flux: "stderr", text: linie }),
+});
+
+// Motorul de exerciții anunță fiecare caz în momentul în care îl termină, nu la
+// final: dacă un caz intră în buclă, cele dinaintea lui sunt deja raportate și
+// nu se pierd când firul e omorât.
+pyodide.globals.set("raporteaza_caz", (indice, stare, primit) => {
+  self.postMessage({
+    id: idCurent,
+    tip: "progres",
+    caz: { indice, stare, primit },
+  });
 });
 
 self.postMessage({ tip: "pornit", versiune: pyodide.version });
@@ -21,6 +35,7 @@ self.postMessage({ tip: "pornit", versiune: pyodide.version });
 self.onmessage = async (ev) => {
   const { id, cod } = ev.data;
   iesire = [];
+  idCurent = id;
 
   try {
     const rezultat = await pyodide.runPythonAsync(cod);

@@ -18,7 +18,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 1 | Next.js export static + GitHub Pages + publicare automată la push | Terminat | Live la `stefania149.github.io/learnbox/`. Repo-ul e `learnbox`; calea de bază se ia din numele lui, nu e scrisă nicăieri. |
 | 2 | PGlite + Drizzle + schema + prima migrare, în IndexedDB | Terminat | Baza rulează într-un Web Worker, din fișiere statice — Turbopack rupe PGlite dacă îl împachetează. Tabelele pentru import și asistent vin în faza 3 (`PLAN.md` Î-12). |
 | 3 | Pyodide în Web Worker, cu cronometru și repornire | Terminat | Fir separat, 5 secunde de răbdare, omorât și repornit la depășire. Servit din fișiere statice, ca PGlite. |
-| 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Neinceput | |
+| 4 | Motorul de exerciții: cazuri de test, rulare, raport „3 din 5" | Terminat | Cazurile se anunță unul câte unul, deci ce a trecut înainte de cronometru rămâne câștigat. Determinismul din §7 stă într-un preludiu Python, nu în enunț. |
 | 5 | Editorul de cod (CodeMirror) + consola de rezultat | Neinceput | |
 | 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Neinceput | |
 | 7 | XP, deblocare de lecții, ecranul de progres | Neinceput | |
@@ -76,5 +76,11 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   extensiile Postgres nefolosite din copie.
 - **Ecranul „Rulare Python" e provizoriu.** Zonă de text simplă, ca pasul 3 să
   aibă o acțiune. Se înlocuiește cu editorul și consola la pasul 5.
+- **Cele trei exerciții demo se seamănă o singură dată**, la prima deschidere
+  (`lib/date/seminte.ts`). Dacă li se schimbă textul sau cazurile, baza locală
+  păstrează versiunea veche — `incercare` trimite la ele și nu se rescrie.
+  Capitolul adevărat vine la pasul 8, cu formatul de curs livrat.
+- **Ecranul „Exerciții" e provizoriu.** Zonă de text și trei exerciții într-o
+  listă, cât să aibă motorul o acțiune. Editorul vine la pasul 5, navigarea la 6.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
   ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.

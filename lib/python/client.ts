@@ -14,16 +14,29 @@ const PORNIRE_MS = 60_000;
 
 export type LinieIesire = { flux: "stdout" | "stderr"; text: string };
 
+/** Un caz de test terminat, anunțat pe măsură ce motorul avansează. */
+export type ProgresCaz = {
+  indice: number;
+  stare: "trecut" | "picat" | "eroare";
+  primit: string;
+};
+
 export type Rezultat =
   | { fel: "gata"; iesire: LinieIesire[]; valoare: string | null }
   | { fel: "eroare"; iesire: LinieIesire[]; eroare: string }
   | { fel: "timp-expirat"; iesire: LinieIesire[]; secunde: number };
 
+export type Optiuni = {
+  rabdareMs?: number;
+  /** Chemat pentru fiecare caz de test terminat, înainte de rezultatul final. */
+  laProgres?: (caz: ProgresCaz) => void;
+};
+
 const caleBaza = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 type Asteptare = {
   rezolva: (r: Rezultat) => void;
-  respinge: (e: Error) => void;
+  laProgres?: (caz: ProgresCaz) => void;
 };
 
 /**
@@ -79,11 +92,16 @@ export class Python {
   }
 
   #primeste(ev: MessageEvent) {
-    const { id, tip, iesire, valoare, eroare } = ev.data;
+    const { id, tip, iesire, valoare, eroare, caz } = ev.data;
     const asteptare = this.#inAsteptare.get(id);
     if (!asteptare) return;
-    this.#inAsteptare.delete(id);
 
+    if (tip === "progres") {
+      asteptare.laProgres?.(caz);
+      return;
+    }
+
+    this.#inAsteptare.delete(id);
     asteptare.rezolva(
       tip === "eroare"
         ? { fel: "eroare", iesire, eroare }
@@ -99,14 +117,15 @@ export class Python {
     this.#inAsteptare.clear();
   }
 
-  async ruleaza(cod: string, rabdareMs = RABDARE_MS): Promise<Rezultat> {
+  async ruleaza(cod: string, optiuni: Optiuni = {}): Promise<Rezultat> {
+    const rabdareMs = optiuni.rabdareMs ?? RABDARE_MS;
     await this.pregateste();
 
     const id = this.#urmatorulId++;
     this.#iesireCurenta = [];
 
-    const raspuns = new Promise<Rezultat>((rezolva, respinge) => {
-      this.#inAsteptare.set(id, { rezolva, respinge });
+    const raspuns = new Promise<Rezultat>((rezolva) => {
+      this.#inAsteptare.set(id, { rezolva, laProgres: optiuni.laProgres });
       this.#fir?.postMessage({ id, cod });
     });
 

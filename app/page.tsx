@@ -17,12 +17,16 @@ export default function Acasa() {
           </p>
           <p className="text-text-slab">
             Primul curs în lucru este <strong className="text-text">Python</strong>.
-            Până e gata, poți verifica dacă browserul tău are ce-i trebuie.
+            Trei exerciții se pot face deja: scrii cod, el rulează pe cazuri de
+            test și primești raportul, caz cu caz.
           </p>
         </Panou>
       </ContinutEcran>
       <BaraActiuni>
-        <ButonLegatura href="/stare/">Verifică browserul</ButonLegatura>
+        <ButonLegatura href="/exercitii/">Fă un exercițiu</ButonLegatura>
+        <ButonLegatura href="/stare/" fel="secundar">
+          Verifică browserul
+        </ButonLegatura>
         <ButonLegatura href="/python/" fel="secundar">
           Rulare Python
         </ButonLegatura>
