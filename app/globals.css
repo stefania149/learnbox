@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* Tokenurile temei. Niciun ecran nu scrie o culoare direct (principiul 9);
+   ecranele folosesc doar numele de mai jos. Sistemul de teme ca date vine la
+   pasul 24 — până atunci există o singură temă, dar stratul e deja aici. */
+:root {
+  --tema-fundal: oklch(0.985 0.002 265);
+  --tema-suprafata: oklch(1 0 0);
+  --tema-contur: oklch(0.9 0.006 265);
+  --tema-text: oklch(0.25 0.015 265);
+  --tema-text-slab: oklch(0.52 0.012 265);
+  --tema-accent: oklch(0.52 0.15 258);
+  --tema-accent-text: oklch(0.99 0 0);
+  --tema-raza: 0.75rem;
+  --tema-font: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --tema-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tema-fundal: oklch(0.18 0.012 265);
+    --tema-suprafata: oklch(0.23 0.014 265);
+    --tema-contur: oklch(0.33 0.016 265);
+    --tema-text: oklch(0.95 0.004 265);
+    --tema-text-slab: oklch(0.72 0.012 265);
+    --tema-accent: oklch(0.72 0.13 258);
+    --tema-accent-text: oklch(0.18 0.012 265);
+  }
+}
+
+@theme inline {
+  --color-fundal: var(--tema-fundal);
+  --color-suprafata: var(--tema-suprafata);
+  --color-contur: var(--tema-contur);
+  --color-text: var(--tema-text);
+  --color-text-slab: var(--tema-text-slab);
+  --color-accent: var(--tema-accent);
+  --color-accent-text: var(--tema-accent-text);
+  --radius-tema: var(--tema-raza);
+  --font-sans: var(--tema-font);
+  --font-mono: var(--tema-font-mono);
+}
+
+body {
+  background: var(--tema-fundal);
+  color: var(--tema-text);
+  font-family: var(--tema-font);
+}
