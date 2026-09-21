@@ -6,7 +6,7 @@
 :root {
   --tema-fundal: oklch(0.985 0.002 265);
   --tema-suprafata: oklch(1 0 0);
-  --tema-contur: oklch(0.9 0.006 265);
+  --tema-contur: oklch(0.82 0.008 265);
   --tema-text: oklch(0.25 0.015 265);
   --tema-text-slab: oklch(0.52 0.012 265);
   --tema-accent: oklch(0.52 0.15 258);
