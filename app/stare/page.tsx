@@ -7,7 +7,7 @@
  * meargă fără internet, și te uiți ce are browserul sub ea.
  */
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   Ecran,
   AntetEcran,
@@ -26,6 +26,15 @@ import {
   ceriInstalarea,
   useStareAplicatie,
 } from "@/componente/pwa";
+import {
+  descarcaModelul,
+  MARIME_APROX_MB,
+  modelInCache,
+  motorPornit,
+  suportaModelul,
+  type RaportProgres,
+} from "@/lib/rutare-model";
+import { scrieModelDescarcat } from "@/lib/date/setari";
 
 type Verificare = { nume: string; explicatie: string; prezent: boolean };
 
@@ -50,6 +59,11 @@ function verifica(): Verificare[] {
       nume: "Service Worker",
       explicatie: "Cu el, aplicația se instalează și pornește fără internet.",
       prezent: typeof navigator !== "undefined" && "serviceWorker" in navigator,
+    },
+    {
+      nume: "WebGPU",
+      explicatie: "Prin el rulează asistentul, cu un model mic în browser.",
+      prezent: typeof navigator !== "undefined" && "gpu" in navigator,
     },
   ];
 }
@@ -192,6 +206,8 @@ export default function Aplicatia() {
           ) : null}
         </Panou>
 
+        <AsistentPanou />
+
         {stare.actualizareGata ? (
           <Panou titlu="Versiune nouă">
             <p className="text-text-slab">
@@ -256,6 +272,140 @@ function Rand({ eticheta, valoare }: { eticheta: string; valoare: string }) {
       </dt>
       <dd className="font-medium">{valoare}</dd>
     </div>
+  );
+}
+
+type StareModel =
+  | { fel: "verifica" }
+  | { fel: "nesuportat" }
+  | { fel: "neinceput"; inCache: boolean }
+  | { fel: "se-descarca"; raport: RaportProgres }
+  | { fel: "gata" }
+  | { fel: "eroare"; mesaj: string };
+
+/**
+ * Modelul, cu descărcare, progres și refuz posibil — pasul 16. Nu pornește
+ * nimic singur: verifică doar dacă WebGPU există și dacă modelul e deja în
+ * cache; descărcarea pornește la clic (`lib/rutare-model.ts`).
+ */
+function AsistentPanou() {
+  const [stare, setStare] = useState<StareModel>({ fel: "verifica" });
+  const [respins, setRespins] = useState(false);
+
+  useEffect(() => {
+    let anulat = false;
+    (async () => {
+      const dejaPornit = motorPornit();
+      if (dejaPornit) {
+        await dejaPornit.catch(() => {});
+        if (!anulat) setStare({ fel: "gata" });
+        return;
+      }
+      if (!(await suportaModelul())) {
+        if (!anulat) setStare({ fel: "nesuportat" });
+        return;
+      }
+      const inCache = await modelInCache().catch(() => false);
+      if (!anulat) setStare({ fel: "neinceput", inCache });
+    })();
+    return () => {
+      anulat = true;
+    };
+  }, []);
+
+  async function descarca() {
+    setRespins(false);
+    setStare({
+      fel: "se-descarca",
+      raport: { text: "Se pregătește…", progres: 0 },
+    });
+    try {
+      await descarcaModelul((raport) => setStare({ fel: "se-descarca", raport }));
+      await scrieModelDescarcat().catch(() => {});
+      setStare({ fel: "gata" });
+    } catch (e) {
+      setStare({ fel: "eroare", mesaj: mesajEroare(e) });
+    }
+  }
+
+  return (
+    <Panou titlu="Asistent">
+      {stare.fel === "verifica" ? (
+        <p className="text-text-slab">
+          Se verifică dacă browserul poate rula un model.
+        </p>
+      ) : null}
+
+      {stare.fel === "nesuportat" ? (
+        <p className="text-text-slab">
+          Browserul ăsta n-are WebGPU, deci asistentul cu model nu poate porni
+          aici. Restul jocului — cursurile, exercițiile, XP-ul, Arhiva — merge
+          la fel.
+        </p>
+      ) : null}
+
+      {stare.fel === "neinceput" ? (
+        <>
+          <p className="text-text-slab">
+            Un model mic ({MARIME_APROX_MB} MB
+            {stare.inCache ? ", deja în cache-ul browserului" : ""}) rulează
+            direct în browser. E prima piesă a asistentului — chatul cu el vine
+            la un pas următor. Fără el, restul jocului merge la fel.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Buton onClick={() => void descarca()}>Descarcă modelul</Buton>
+            <Buton fel="secundar" onClick={() => setRespins(true)}>
+              Nu acum
+            </Buton>
+          </div>
+          {respins ? (
+            <p className="text-sm text-text-slab">
+              Poți reveni oricând — nimic nu se schimbă până atunci.
+            </p>
+          ) : null}
+        </>
+      ) : null}
+
+      {stare.fel === "se-descarca" ? (
+        <>
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(stare.raport.progres * 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="h-2 w-full overflow-hidden rounded-full bg-fundal"
+          >
+            <div
+              className="h-full bg-accent transition-[width]"
+              style={{ width: `${Math.round(stare.raport.progres * 100)}%` }}
+            />
+          </div>
+          <p aria-live="polite" className="text-sm text-text-slab">
+            {stare.raport.text || "Se descarcă…"}
+          </p>
+        </>
+      ) : null}
+
+      {stare.fel === "gata" ? (
+        <p className="text-text-slab">
+          Modelul e descărcat și pornit pe calculatorul ăsta.
+        </p>
+      ) : null}
+
+      {stare.fel === "eroare" ? (
+        <>
+          <p className="text-text-slab">
+            Modelul nu s-a pornit. Restul jocului nu e afectat.
+          </p>
+          <p className="font-mono text-sm text-text-slab">{stare.mesaj}</p>
+          <div>
+            <Buton fel="secundar" onClick={() => void descarca()}>
+              Încearcă din nou
+            </Buton>
+          </div>
+        </>
+      ) : null}
+    </Panou>
   );
 }
 

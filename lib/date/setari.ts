@@ -54,6 +54,21 @@ export async function scrieRegistruTon(registru: RegistruTon) {
 }
 
 /**
+ * Modelul s-a descărcat măcar o dată pe calculatorul ăsta (pasul 16). Se scrie
+ * o singură dată, la primul succes — nu se stinge înapoi.
+ */
+export async function scrieModelDescarcat() {
+  const { baza } = await deschideBaza();
+  await citesteSetari();
+  const scrise = await baza
+    .update(setari)
+    .set({ modelDescarcat: true })
+    .where(eq(setari.id, 1))
+    .returning();
+  return scrise[0];
+}
+
+/**
  * Numele de pe ecranul de profil. Se șterge scriind un șir gol: profilul
  * merge și fără nume.
  */

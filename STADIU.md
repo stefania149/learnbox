@@ -40,7 +40,7 @@ GitHub Pages. **Aici e linia de demo.**
 
 | # | Pas | Status | Notițe |
 |---|---|---|---|
-| 16 | `lib/rutare-model.ts` + WebLLM + descărcare cu progres și refuz posibil | Neinceput | |
+| 16 | `lib/rutare-model.ts` + WebLLM + descărcare cu progres și refuz posibil | Terminat | Panoul „Asistent" pe `/stare/`: verifică WebGPU, descarcă cu bară de progres, „Nu acum" nu strică nimic. Ca PGlite, pachetul (~6 MB) nu trece prin Turbopack — `scripts/fa-model-worker.mjs` îl împachetează cu esbuild în `public/vendor/web-llm/`, în afara coajei. Testat cap-coadă în Chrome: descărcare reală (664 MB, ~55s), motor pornit, recunoaște cache-ul la reîncărcare. Modelul ales: Llama-3.2-1B-Instruct-q4f16_1-MLC. |
 | 17 | Degradarea completă fără model, testată prin dezactivare | Neinceput | |
 | 18 | Import PDF → chunk-uri → embeddings | Neinceput | |
 | 19 | Graful de concepte + detectarea lacunelor + marcarea provenienței | Neinceput | |
