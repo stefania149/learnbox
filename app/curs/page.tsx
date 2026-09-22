@@ -17,6 +17,7 @@ import {
   hartaCursului,
   type Harta,
   type NivelHarta,
+  type TestHarta,
 } from "@/lib/date/progres";
 import { cheieCursului, cu } from "@/lib/continut/livrate";
 import { REZUMATE } from "@/lib/continut/rezumat";
@@ -155,6 +156,13 @@ function EcranCurs() {
               </Panou>
             ) : null}
 
+            {stare.harta.capitole.some((c) => c.teste.length > 0) ? (
+              <ArhivaPanou
+                cheie={cheie}
+                teste={stare.harta.capitole.flatMap((c) => c.teste)}
+              />
+            ) : null}
+
             <Panou titlu="Celelalte cursuri">
               <ul className="flex flex-col gap-3">
                 {REZUMATE.filter((r) => r.cheie !== cheie).map((r) => (
@@ -223,6 +231,40 @@ const ETICHETE = {
   deschis: "Deschisă",
   blocat: "Se deschide mai încolo",
 } as const;
+
+function ArhivaPanou({
+  cheie,
+  teste,
+}: {
+  cheie: ReturnType<typeof cheieCursului>;
+  teste: TestHarta[];
+}) {
+  const duse = teste.filter((t) => t.dus).length;
+  const deschisa = teste.length > 0 && duse === teste.length;
+
+  return (
+    <Panou titlu="Arhiva">
+      {deschisa ? (
+        <>
+          <p className="text-text-slab">
+            Toate testele sunt duse. Arhiva ta s-a deschis — un rezumat scris
+            din încercările tale reale.
+          </p>
+          <div>
+            <ButonLegatura href={cu("/arhiva/", cheie)} fel="secundar">
+              Deschide Arhiva
+            </ButonLegatura>
+          </div>
+        </>
+      ) : (
+        <p className="text-text-slab">
+          Testele îți deschid Arhiva de la final. Poți sări peste, dar ea
+          rămâne închisă. Până acum: {duse} din {teste.length} duse.
+        </p>
+      )}
+    </Panou>
+  );
+}
 
 function RandLectie({
   nivel,

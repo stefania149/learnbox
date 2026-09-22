@@ -12,7 +12,7 @@
  */
 import { desc, eq, inArray, or } from "drizzle-orm";
 import { deschideBaza } from "./client";
-import { incercare, test } from "./schema";
+import { capitol, incercare, nivel, test } from "./schema";
 import { aplicaSeminte, intrebarile, type Test } from "./seminte";
 import { adaugaXp } from "./incercari";
 import { socotesteXpTest, type SocotealaXp } from "@/lib/exercitii/xp";
@@ -118,6 +118,64 @@ export async function testeleCapitolului(
     );
 
   return randuri.map((r) => ({ ...r, titlu: r.titlu ?? "Test" }));
+}
+
+/** Toate testele materiei: ale capitolelor ei și ale lecțiilor lor. */
+async function testeleMateriei(materieId: number) {
+  const { baza } = await deschideBaza();
+
+  const capitole = await baza
+    .select({ id: capitol.id })
+    .from(capitol)
+    .where(eq(capitol.materieId, materieId));
+  if (capitole.length === 0) return [];
+
+  const niveluri = await baza
+    .select({ id: nivel.id })
+    .from(nivel)
+    .where(
+      inArray(
+        nivel.capitolId,
+        capitole.map((c) => c.id),
+      ),
+    );
+
+  return baza
+    .select({ id: test.id })
+    .from(test)
+    .where(
+      or(
+        inArray(
+          test.capitolId,
+          capitole.map((c) => c.id),
+        ),
+        niveluri.length > 0
+          ? inArray(
+              test.nivelId,
+              niveluri.map((n) => n.id),
+            )
+          : undefined,
+      ),
+    );
+}
+
+export type ProgresTesteMaterie = { duse: number; total: number; toateDuse: boolean };
+
+/**
+ * Cât din testele materiei au fost duse măcar o dată — condiția Arhivei
+ * (`PLAN.md` §5, §8: „Testele îți deschid Arhiva de la final."). O materie
+ * fără niciun test nu se deschide niciodată — n-are ce s-o deschidă.
+ */
+export async function progresTesteMaterie(
+  materieId: number,
+): Promise<ProgresTesteMaterie> {
+  const teste = await testeleMateriei(materieId);
+  const duse = await testeleDuse(teste.map((t) => t.id));
+  return {
+    duse: duse.size,
+    total: teste.length,
+    toateDuse: teste.length > 0 && duse.size === teste.length,
+  };
 }
 
 /** Ultima încercare la testul ăsta, ca ecranul să arate unde ai rămas. */
