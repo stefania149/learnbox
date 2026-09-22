@@ -514,7 +514,7 @@ Nu e terminat până nu trec toate cinci:
 - **Î-3.** Cine e mascota și cum arată, în patru variante de temă? *Provizoriu: o formă abstractă simplă, animabilă din CSS — nu un personaj desenat.*
 - **Î-4.** ~~Cheia API — a cui?~~ **Decis: nicio cheie.** Cursurile livrate sunt pregenerate; restul rulează în browser.
 - **Î-5.** Cât de mari sunt chunk-urile la import? *Provizoriu: ~800 caractere, suprapunere 100.*
-- **Î-6.** Câte cursuri livrate la v1, și care? *Nedecis. Cel puțin Python, fiindcă e materia de probă.*
+- **Î-6.** ~~Câte cursuri livrate la v1, și care?~~ **Decis: două, Python și SQL** (pasul 13). SQL a venit al doilea fiindcă motorul lui era deja în aplicație — PGlite ține și baza cu progresul — dar „aproape gratis" a fost optimist: a cerut un al doilea fir de execuție, o formă nouă de caz de test (date de pregătire și rânduri așteptate) și alegerea cursului peste tot prin interfață. Al treilea curs, dacă vine, e ori Python ori SQL la a doua rundă; o materie fără execuție așteaptă pasul 27.
 - **Î-7.** Ce se întâmplă cu un cod corect ca rezultat dar prost scris? *Provizoriu: „corect", cu observație. Nu penalizează (principiul 6).*
 - **Î-8.** Se avertizează utilizatorul că datele stau în browser și se pot pierde? *Provizoriu: da, o dată, la primul progres salvat, cu buton de export lângă.*
 - **Î-9.** Ce se întâmplă pe telefon? *Provizoriu: PWA-ul merge, dar fără import și fără model. Nu optimizăm la v1.*
@@ -523,13 +523,15 @@ Nu e terminat până nu trec toate cinci:
 - **Î-12.** Ce dimensiune are vectorul de embedding, și ce model îl produce? Până se decide, tabelele `material`, `chunk`, `concept`, `concept_leg`, `memorie` și `conversatie` nu există în schemă — vin cu migrarea lor în faza 3. *Provizoriu: nedecis.*
 - **Î-13.** Cum se socotește `nivel_jucator` din XP-ul unei materii? Până se decide, rămâne `1` și nu apare pe ecran; XP-ul se adună, atât. *Provizoriu: nedecis.*
 - **Î-14.** Când se consideră terminată o lecție, ca să se deblocheze următoarea? *Provizoriu: când fiecare exercițiu al ei a fost încercat măcar o dată — nu când toate trec. XP-ul măsoară efortul (§8), deci nici deblocarea nu se leagă de corectitudine.*
-- **Î-15.** Unde stau evenimentele de XP care nu sunt încercări — briefingul citit, bonusul de revenire, mai târziu testele? §11 n-are loc pentru ele, fiindcă `incercare` cere un exercițiu sau un test. *Provizoriu: doar în totaluri (`xp_total`, `progres_nivel.xp_obtinut`), cu două steaguri în schemă (`progres_nivel.briefing_citit`, `setari.vazut_ultima_data`). Un tabel `eveniment_xp` se adaugă dacă Arhiva are nevoie de istoric.*
-- **Î-16.** Coperta (ecranul de intrare) e desenată ca un calculator vechi și
-  are paleta ei, fixă: nu urmează nici schema luminoasă sau întunecată a
-  sistemului, nici tema aleasă de utilizator. Rămâne așa, sau se schimbă
-  odată cu tema? *Provizoriu: rămâne fixă, fiindcă e un obiect desenat, nu un
-  ecran de lucru. Tokenurile `--tema-retro-*` din `app/globals.css` devin
-  paleta temei „terminal” (§10) la pasul 24.*
+- **Î-15.** Unde stau evenimentele de XP care nu sunt încercări — briefingul citit și bonusul de revenire? (Testele au intrat în `incercare`, cu `test_id`, la pasul 14, deci au istoric ca exercițiile.) §11 n-are loc pentru ele, fiindcă `incercare` cere un exercițiu sau un test. *Provizoriu: doar în totaluri (`xp_total`, `progres_nivel.xp_obtinut`), cu două steaguri în schemă (`progres_nivel.briefing_citit`, `setari.vazut_ultima_data`). Un tabel `eveniment_xp` se adaugă dacă Arhiva are nevoie de istoric.*
+- **Î-16.** ~~Coperta e desenată ca un calculator vechi și are paleta ei,
+  fixă. Rămâne așa, sau se schimbă odată cu tema?~~ **Decis: nu coperta s-a
+  mutat la restul, ci restul la copertă.** Paleta retro a devenit tema
+  aplicației, pe toate ecranele: birou de lemn, carcasă, sticlă verde, un
+  singur chip de literă. S-a făcut din tokenuri și din rama comună
+  (`componente/ecran.tsx`), fără să se atingă vreun ecran în parte — proba
+  principiului 9. Rămâne fixă, deci aplicația nu urmează schema luminoasă a
+  sistemului; o temă deschisă e una dintre cele de la pasul 24.
 - **Î-17.** Cât de departe merge profilul? Ecranul `/profil/` arată ce e în
   bază — cursul, XP-ul, lecțiile, ce urmează — plus un nume ales de
   utilizator (`setari.nume_afisat`, migrarea 0003), scris de acolo și păstrat
@@ -552,3 +554,10 @@ Nu e terminat până nu trec toate cinci:
   `primeste` îl așază. Costă zero, nu cere nicio cheie în repo și lasă autorul
   să vadă ce a ieșit înainte să se scrie ceva. Dacă pasul 13 se dovedește prea
   greoi așa, se adaugă un furnizor automat lângă drumul ăsta, nu în locul lui.*
+- **Î-20.** Unde stă cursul ales, acum că sunt două? În adresă
+  (`/curs/?curs=sql`) sau în bază, ca setare? *Provizoriu: în adresă. O adresă
+  spune singură unde ești, se poate pune la favorite și se poate trimite
+  cuiva, iar butonul „înapoi" face ce trebuie. Costul e că aplicația nu ține
+  minte pe care curs erai: deschisă din nou, pornește de la copertă, unde sunt
+  amândouă. Dacă asta supără la folosire, se adaugă o coloană `curs_activ` în
+  `setari` și adresa rămâne ca acum, ca scurtătură.*

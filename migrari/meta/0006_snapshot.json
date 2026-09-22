@@ -1,0 +1,769 @@
+{
+  "id": "d9ec7fb7-df16-4a96-b109-8ebb9a781d31",
+  "prevId": "df1b088f-1d29-4346-8ede-480e61e734dd",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.capitol": {
+      "name": "capitol",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "materie_id": {
+          "name": "materie_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cheie": {
+          "name": "cheie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nume": {
+          "name": "nume",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordine": {
+          "name": "ordine",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "capitol_materie_id_materie_id_fk": {
+          "name": "capitol_materie_id_materie_id_fk",
+          "tableFrom": "capitol",
+          "tableTo": "materie",
+          "columnsFrom": [
+            "materie_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "capitol_cheie": {
+          "name": "capitol_cheie",
+          "nullsNotDistinct": false,
+          "columns": [
+            "materie_id",
+            "cheie"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exercitiu": {
+      "name": "exercitiu",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nivel_id": {
+          "name": "nivel_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cheie": {
+          "name": "cheie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ordine": {
+          "name": "ordine",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tip": {
+          "name": "tip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "limbaj": {
+          "name": "limbaj",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enunt": {
+          "name": "enunt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cod_initial": {
+          "name": "cod_initial",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solutie": {
+          "name": "solutie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cazuri_test": {
+          "name": "cazuri_test",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rubrica": {
+          "name": "rubrica",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "explicatie_predefinita": {
+          "name": "explicatie_predefinita",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exercitiu_nivel_id_nivel_id_fk": {
+          "name": "exercitiu_nivel_id_nivel_id_fk",
+          "tableFrom": "exercitiu",
+          "tableTo": "nivel",
+          "columnsFrom": [
+            "nivel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exercitiu_cheie": {
+          "name": "exercitiu_cheie",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nivel_id",
+            "cheie"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.incercare": {
+      "name": "incercare",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "exercitiu_id": {
+          "name": "exercitiu_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "test_id": {
+          "name": "test_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raspuns": {
+          "name": "raspuns",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verdict": {
+          "name": "verdict",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cazuri_trecute": {
+          "name": "cazuri_trecute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cazuri_total": {
+          "name": "cazuri_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eroare_python": {
+          "name": "eroare_python",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "explicatie_eroare": {
+          "name": "explicatie_eroare",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xp": {
+          "name": "xp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "creat_la": {
+          "name": "creat_la",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "incercare_exercitiu_id_exercitiu_id_fk": {
+          "name": "incercare_exercitiu_id_exercitiu_id_fk",
+          "tableFrom": "incercare",
+          "tableTo": "exercitiu",
+          "columnsFrom": [
+            "exercitiu_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "incercare_test_id_test_id_fk": {
+          "name": "incercare_test_id_test_id_fk",
+          "tableFrom": "incercare",
+          "tableTo": "test",
+          "columnsFrom": [
+            "test_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.materie": {
+      "name": "materie",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nume": {
+          "name": "nume",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sursa": {
+          "name": "sursa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'livrat'"
+        },
+        "tema_implicita": {
+          "name": "tema_implicita",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stare_generare": {
+          "name": "stare_generare",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'gata'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.nivel": {
+      "name": "nivel",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capitol_id": {
+          "name": "capitol_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cheie": {
+          "name": "cheie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nume": {
+          "name": "nume",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordine": {
+          "name": "ordine",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "briefing": {
+          "name": "briefing",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stare": {
+          "name": "stare",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'blocat'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "nivel_capitol_id_capitol_id_fk": {
+          "name": "nivel_capitol_id_capitol_id_fk",
+          "tableFrom": "nivel",
+          "tableTo": "capitol",
+          "columnsFrom": [
+            "capitol_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "nivel_cheie": {
+          "name": "nivel_cheie",
+          "nullsNotDistinct": false,
+          "columns": [
+            "capitol_id",
+            "cheie"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.progres_nivel": {
+      "name": "progres_nivel",
+      "schema": "",
+      "columns": {
+        "nivel_id": {
+          "name": "nivel_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "stare": {
+          "name": "stare",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'neinceput'"
+        },
+        "xp_obtinut": {
+          "name": "xp_obtinut",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "terminat_la": {
+          "name": "terminat_la",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "briefing_citit": {
+          "name": "briefing_citit",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "progres_nivel_nivel_id_nivel_id_fk": {
+          "name": "progres_nivel_nivel_id_nivel_id_fk",
+          "tableFrom": "progres_nivel",
+          "tableTo": "nivel",
+          "columnsFrom": [
+            "nivel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.samanta_aplicata": {
+      "name": "samanta_aplicata",
+      "schema": "",
+      "columns": {
+        "nume": {
+          "name": "nume",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "aplicata_la": {
+          "name": "aplicata_la",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.setari": {
+      "name": "setari",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": 1
+        },
+        "tema_activa": {
+          "name": "tema_activa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sobra'"
+        },
+        "registru_ton": {
+          "name": "registru_ton",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'neutru'"
+        },
+        "materie_activa": {
+          "name": "materie_activa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model_descarcat": {
+          "name": "model_descarcat",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "nume_afisat": {
+          "name": "nume_afisat",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vazut_ultima_data": {
+          "name": "vazut_ultima_data",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "setari_materie_activa_materie_id_fk": {
+          "name": "setari_materie_activa_materie_id_fk",
+          "tableFrom": "setari",
+          "tableTo": "materie",
+          "columnsFrom": [
+            "materie_activa"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "setari_rand_unic": {
+          "name": "setari_rand_unic",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.stapanire": {
+      "name": "stapanire",
+      "schema": "",
+      "columns": {
+        "concept_id": {
+          "name": "concept_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "stabilitate": {
+          "name": "stabilitate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "dificultate": {
+          "name": "dificultate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "urmatoarea_verificare": {
+          "name": "urmatoarea_verificare",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test": {
+      "name": "test",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nivel_id": {
+          "name": "nivel_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capitol_id": {
+          "name": "capitol_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cheie": {
+          "name": "cheie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titlu": {
+          "name": "titlu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "intrebari": {
+          "name": "intrebari",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "test_nivel_id_nivel_id_fk": {
+          "name": "test_nivel_id_nivel_id_fk",
+          "tableFrom": "test",
+          "tableTo": "nivel",
+          "columnsFrom": [
+            "nivel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "test_capitol_id_capitol_id_fk": {
+          "name": "test_capitol_id_capitol_id_fk",
+          "tableFrom": "test",
+          "tableTo": "capitol",
+          "columnsFrom": [
+            "capitol_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "test_nivel": {
+          "name": "test_nivel",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nivel_id"
+          ]
+        },
+        "test_capitol": {
+          "name": "test_capitol",
+          "nullsNotDistinct": false,
+          "columns": [
+            "capitol_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.xp_total": {
+      "name": "xp_total",
+      "schema": "",
+      "columns": {
+        "materie_id": {
+          "name": "materie_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "nivel_jucator": {
+          "name": "nivel_jucator",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "xp_total_materie_id_materie_id_fk": {
+          "name": "xp_total_materie_id_materie_id_fk",
+          "tableFrom": "xp_total",
+          "tableTo": "materie",
+          "columnsFrom": [
+            "materie_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

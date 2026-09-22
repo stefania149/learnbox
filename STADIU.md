@@ -32,8 +32,8 @@ GitHub Pages. **Aici e linia de demo.**
 |---|---|---|---|
 | 11 | Formatul de curs livrat (JSON) + validare la încărcare | Terminat | Cursul stă în `public/cursuri/python.json`, se aduce cu `fetch` și trece printr-un validator scris de mână (`lib/continut/format.ts`) înainte să atingă baza. Migrarea 0004 aduce `cheie` pe capitol, lecție și exercițiu, plus `ordine` pe exercițiu: un enunț rescris nu mai înseamnă exercițiu nou. Bazele de dinainte își primesc cheile la prima așezare, potrivite după nume. |
 | 12 | Unealta de generare a cursurilor livrate, rulată la autor | Terminat | `scripts/fa-cursul.mjs`: `cerere` adună briefingul autorului cu regulile casei, `primeste` calculează cheile, trece răspunsul prin validatorul aplicației și îl așază în `public/cursuri/`. Modelul se cheamă de mână, fără cheie API (`PLAN.md` Î-19). O cheie care ar dispărea între două generări oprește scrierea: ar însemna încercări orfane. |
-| 13 | Două-trei cursuri livrate complete | Neinceput | |
-| 14 | Testele de lecție și de capitol | Neinceput | |
+| 13 | Două-trei cursuri livrate complete | Terminat | Al doilea curs e SQL: „Întrebări puse unui tabel", 5 lecții, 15 exerciții, rulate pe un Postgres gol în memorie (`public/sql.worker.js`), separat de baza cu progresul. Un caz de SQL are `pregatire` (datele) și rânduri așteptate scrise ca JSON; motorul e altul, raportul și XP-ul sunt aceleași. Cursul se alege din adresă (`PLAN.md` Î-20), iar copia de progres trece la versiunea 3, cu toate cursurile în ea. |
+| 14 | Testele de lecție și de capitol | Terminat | Întrebări cu variante, scrise în cursul livrat: câte una pe ecran, cu explicația arătată după răspuns — și când ai nimerit, și când n-ai nimerit. Verdictul e o comparație de numere, deci merge fără model. Nu blochează nimic: se sare, se reia, și de fiecare dată plătește XP (`PLAN.md` §5, §8). Migrarea 0006 aduce `cheie` și `titlu` pe `test`, iar copia de progres trece la versiunea 4, cu trecerile prin teste în ea. |
 | 15 | Arhiva deblocabilă | Neinceput | |
 
 ## Faza 3 — Agentul
@@ -78,6 +78,31 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie. Pentru instalare nu mai cântărește
   la fel de mult: la instalare se ia doar coaja, 2,3 MB (`PLAN.md` Î-18).
+- **Cele două fire de execuție sunt aproape gemene.** `lib/sql/client.ts` e
+  copia lui `lib/python/client.ts`: aceeași pornire, același cronometru,
+  aceeași omorâre și repornire. Diferă ce se trimite pe fir. De unit într-o
+  bază comună când apare al treilea motor — nu mai devreme, fiindcă
+  refacerea celui de Python, care merge, ar fi risc pe degeaba.
+- **Prima lecție de SQL se bizuie pe ordinea de inserare.** Exercițiile ei
+  ies înainte să se predea `ORDER BY`, deci cazurile așteaptă rândurile în
+  ordinea în care au intrat în tabel. Pe tabele de trei-patru rânduri
+  Postgres le dă mereu așa, și briefingul spune limpede că nu te poți bizui
+  pe asta — dar e singurul loc din conținut unde verificarea nu e garantată
+  de standard.
+- **Răspunsul corect al unei întrebări nu se poate verifica de nimeni.**
+  Exercițiile se probează cu Python și Postgres adevărat, deci o soluție
+  greșită cade la autor. La teste nu există așa ceva: dacă `corect` arată
+  spre altă variantă decât cea despre care vorbește explicația, nimic n-o
+  prinde — s-a și întâmplat o dată, la scrierea capitolului de Python.
+  Unealta verifică doar ce se poate verifica mecanic (variante identice,
+  explicație care repetă varianta). Restul rămâne pe citit de om.
+- **Migrările se recunosc după număr, nu după nume.** `drizzle-kit` botează
+  fișierele la întâmplare și noi le rebotezăm; o bază care apucase să aplice
+  migrarea sub numele generat o relua după rebotezare și cădea peste o
+  coloană existentă. Evidența ține acum numărul din față, deci **două migrări
+  nu pot avea același număr** niciodată. Tot n-avem sume de control: o
+  migrare comisă și editată pe urmă se aplică bazelor noi și nu celor vechi,
+  în tăcere — de-aia `CLAUDE.md` spune să nu se editeze.
 - **Potrivirea după nume a rămas ca punte.** De la pasul 11 conținutul se
   leagă după `cheie`, dar `lib/date/seminte.ts` și `lib/date/copie.ts` știu
   încă să potrivească după nume și enunț: o bază făcută înainte de migrarea
@@ -98,11 +123,14 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   nicăieri rând cu rând. Ecranul de progres le arată ca sumă, nu ca listă. Dacă
   Arhiva (pasul 15) are nevoie de ele una câte una, trebuie un tabel de
   evenimente (`PLAN.md` Î-15).
-- **Coperta are paleta ei.** Ecranul de intrare (`app/page.tsx`,
-  `componente/terminal.tsx`) e desenat ca un monitor din anii '80 și
-  folosește tokenurile `--tema-retro-*`, care nu se schimbă cu schema
-  sistemului. Textul de pe el vine din capitolul livrat, nu din bază, ca să
-  apară instantaneu. Vezi `PLAN.md` Î-16.
+- **Tema nu urmează schema sistemului.** Paleta copertei a devenit paleta
+  întregii aplicații, și e fixă: cine ține calculatorul pe „luminos" primește
+  tot un ecran închis. Era adevărat doar despre copertă, acum e adevărat
+  peste tot. O temă deschisă se adaugă la pasul 24, fără să se atingă vreun
+  ecran — tokenurile sunt deja acolo. Vezi `PLAN.md` Î-16.
+- **Textul copertei vine din fișier, nu din bază.** `app/page.tsx` citește
+  `lib/continut/rezumat.ts`, generat la build, ca să apară instantaneu, fără
+  să deschidă baza (`PLAN.md` Î-16).
 - **Ecranul de profil n-are pereche în `PLAN.md` §13.** `/profil/` e un dulap
   de vestiar cu afișul tău înăuntru (`componente/dulap.tsx`), cerut peste
   plan. Are paleta lui, `--tema-dulap-*`, și arată numai ce e în bază. Numele
@@ -113,4 +141,10 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   `componente/consola.tsx`, scrie „its not right but keep going" — cerută
   anume. E singura abatere de la „UI 100% română" din `CLAUDE.md`.
 - **O singură temă, dar prin tokenuri.** `app/globals.css` definește tokenurile;
-  ecranele nu scriu culori. Sistemul de teme ca date vine la pasul 24.
+  ecranele nu scriu culori. Tema „terminal" s-a întins peste toată aplicația
+  schimbând numai valorile din fișierul ăla și rama din `componente/ecran.tsx`
+  — proba principiului 9. Sistemul de teme ca date vine la pasul 24.
+- **Trei culori scrise ca text, în afara tokenurilor.** Manifestul PWA și cele
+  două iconițe SVG sunt citite de sistemul de operare înainte să existe CSS,
+  deci au fosforul și lemnul scrise în hex. La o temă nouă se schimbă de mână,
+  în `app/manifest.ts`, `app/icon.svg` și `scripts/iconite/`.

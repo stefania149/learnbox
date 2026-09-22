@@ -20,6 +20,14 @@ export const XP = {
   briefing: 3,
   /** Te-ai întors după o pauză. Se dă tăcut, nu se anunță. */
   revenire: 5,
+  /** Ai dus testul până la capăt, oricâte ai nimerit. */
+  testDus: 10,
+  /** Pentru fiecare întrebare la care ai răspuns bine. */
+  intrebareBuna: 4,
+  /** Ai terminat testul unei lecții — mare. */
+  testNivel: 25,
+  /** Ai terminat testul unui capitol — foarte mare. */
+  testCapitol: 60,
 } as const;
 
 /** După câte ore de pauză se dă bonusul de revenire. */
@@ -55,6 +63,39 @@ export function socotesteXp({
       parti.push({ eticheta: "Din prima", xp: XP.dinPrima });
     }
   }
+
+  return { parti, total: parti.reduce((s, p) => s + p.xp, 0) };
+}
+
+/**
+ * XP-ul unui test dus până la capăt.
+ *
+ * Aceeași regulă ca la exerciții: se plătește mersul până la capăt, nu nota.
+ * Cine răspunde greșit la tot iese cu XP pozitiv și cu explicația fiecărei
+ * întrebări. Testul se poate relua, și atunci se plătește din nou — o reluare
+ * e tot efort (`PLAN.md` §8).
+ */
+export function socotesteXpTest({
+  corecte,
+  esteCapitol,
+}: {
+  corecte: number;
+  esteCapitol: boolean;
+}): SocotealaXp {
+  const parti: Parte[] = [{ eticheta: "Ai dus testul până la capăt", xp: XP.testDus }];
+
+  if (corecte > 0) {
+    parti.push({
+      eticheta:
+        corecte === 1 ? "O întrebare bună" : `${corecte} întrebări bune`,
+      xp: corecte * XP.intrebareBuna,
+    });
+  }
+
+  parti.push({
+    eticheta: esteCapitol ? "Test de capitol terminat" : "Test de lecție terminat",
+    xp: esteCapitol ? XP.testCapitol : XP.testNivel,
+  });
 
   return { parti, total: parti.reduce((s, p) => s + p.xp, 0) };
 }
