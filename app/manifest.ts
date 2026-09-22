@@ -7,9 +7,11 @@ const baza = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 // Singurele două culori scrise ca text în tot proiectul. Manifestul e citit de
 // sistemul de operare înainte să existe CSS, deci nu poate primi tokenuri
 // (principiul 9 vorbește despre ecrane). Valorile sunt `--tema-accent` și
-// `--tema-fundal` din tema deschisă, convertite în hex.
-const ACCENT = "#2f5bd0";
-const FUNDAL = "#f7f7fa";
+// `--tema-fundal` din temă, convertite în hex — fosforul verde și lemnul
+// biroului. Se schimbă odată cu tema, altfel fereastra în care pornește
+// aplicația e de altă culoare decât aplicația.
+const ACCENT = "#79f481";
+const FUNDAL = "#25170c";
 
 export const dynamic = "force-static";
 

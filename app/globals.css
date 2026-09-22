@@ -2,46 +2,49 @@
 
 /* Tokenurile temei. Niciun ecran nu scrie o culoare direct (principiul 9);
    ecranele folosesc doar numele de mai jos. Sistemul de teme ca date vine la
-   pasul 24 — până atunci există o singură temă, dar stratul e deja aici. */
+   pasul 24 — până atunci există o singură temă, dar stratul e deja aici.
+
+   Tema e „terminal": aceeași lume ca pe copertă, pe toate ecranele. Un birou
+   de lemn, un monitor cu carcasă, sticlă verde înăuntru. Valorile vin din
+   paleta retro de mai jos, ca să existe un singur adevăr; ecranele nu știu
+   asta, ele cer „fundal", „sticlă", „text".
+
+   Nu urmează schema luminoasă sau întunecată a sistemului. Un monitor
+   desenat nu se face alb pentru că afară e soare (`PLAN.md` Î-16). */
 :root {
-  --tema-fundal: oklch(0.985 0.002 265);
-  --tema-suprafata: oklch(1 0 0);
-  --tema-contur: oklch(0.82 0.008 265);
-  --tema-text: oklch(0.25 0.015 265);
-  --tema-text-slab: oklch(0.52 0.012 265);
-  --tema-accent: oklch(0.52 0.15 258);
-  --tema-accent-text: oklch(0.99 0 0);
+  /* Biroul: ce se vede în spatele carcasei. */
+  --tema-fundal: var(--tema-retro-lemn);
+  /* Carcasa monitorului, și rama oricărui bloc care nu e sticlă. */
+  --tema-rama: var(--tema-retro-carcasa);
+  --tema-rama-slab: var(--tema-retro-carcasa-slab);
+  --tema-rama-contur: var(--tema-retro-contur);
+  --tema-rama-text: var(--tema-retro-eticheta-slab);
+  /* Sticla: suprafața pe care se citește. */
+  --tema-sticla: var(--tema-retro-ecran);
+  /* Blocurile dinăuntrul sticlei. */
+  --tema-suprafata: var(--tema-retro-ecran-slab);
+  --tema-contur: oklch(0.34 0.05 155);
+
+  /* Fosfor, în două trepte. Textul lung e cel potolit; ce trebuie remarcat
+     — titluri, cifre, valori — e cel viu. */
+  --tema-text: oklch(0.85 0.11 148);
+  --tema-text-slab: oklch(0.71 0.07 150);
+  --tema-accent: var(--tema-retro-fosfor);
+  --tema-accent-text: var(--tema-retro-ecran);
+
   --tema-raza: 0.75rem;
-  --tema-font: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  /* Un singur chip de literă, ca pe un terminal adevărat. */
   --tema-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  --tema-font: var(--tema-font-mono);
 
-  /* Colorarea codului. Tot tokenuri: editorul nu știe ce temă e activă, iar o
-     temă „terminal" (§10) schimbă numai valorile de aici. */
-  --tema-cod-cuvant: oklch(0.45 0.16 300);
-  --tema-cod-nume: oklch(0.42 0.14 258);
-  --tema-cod-sir: oklch(0.44 0.12 155);
-  --tema-cod-numar: oklch(0.48 0.13 60);
-  --tema-cod-comentariu: oklch(0.5 0.02 265);
-  --tema-cod-rand-activ: oklch(0.95 0.006 265);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tema-fundal: oklch(0.18 0.012 265);
-    --tema-suprafata: oklch(0.23 0.014 265);
-    --tema-contur: oklch(0.33 0.016 265);
-    --tema-text: oklch(0.95 0.004 265);
-    --tema-text-slab: oklch(0.72 0.012 265);
-    --tema-accent: oklch(0.72 0.13 258);
-    --tema-accent-text: oklch(0.18 0.012 265);
-
-    --tema-cod-cuvant: oklch(0.78 0.13 300);
-    --tema-cod-nume: oklch(0.8 0.11 258);
-    --tema-cod-sir: oklch(0.78 0.11 155);
-    --tema-cod-numar: oklch(0.82 0.11 70);
-    --tema-cod-comentariu: oklch(0.66 0.02 265);
-    --tema-cod-rand-activ: oklch(0.26 0.014 265);
-  }
+  /* Colorarea codului, aleasă pentru sticla verde: editorul nu știe ce temă e
+     activă, iar o temă nouă schimbă numai valorile de aici. */
+  --tema-cod-cuvant: oklch(0.87 0.15 92);
+  --tema-cod-nume: oklch(0.88 0.1 195);
+  --tema-cod-sir: oklch(0.83 0.13 50);
+  --tema-cod-numar: oklch(0.9 0.15 130);
+  --tema-cod-comentariu: oklch(0.64 0.05 152);
+  --tema-cod-rand-activ: oklch(0.25 0.04 155);
 }
 
 /* Coperta retro: ecranul pe care cade utilizatorul când intră. E un obiect —
@@ -70,24 +73,32 @@
   --tema-retro-dunga-5: oklch(0.72 0.14 235);
 }
 
-/* Dulapul din vestiar: ecranul de profil. Alt obiect, altă paletă — metal
-   gri, becul de sus, hârtie și scris de mână cu galben. Tot tokenuri. */
+/* Dulapul din vestiar: ecranul de profil. Alt obiect, dar în aceeași
+   încăpere ca monitorul — aceleași materiale, aceeași lumină. Era gri și rece
+   când era singurul ecran cu paleta lui; acum stă lângă celelalte, deci s-a
+   mutat în lumea lor: lemn, tablă de culoarea carcasei, lumină de fosfor.
+   Tot tokenuri (principiul 9). */
 :root {
-  --tema-dulap-camera: oklch(0.24 0.004 255);
-  --tema-dulap-metal: oklch(0.56 0.006 255);
-  --tema-dulap-metal-slab: oklch(0.46 0.006 255);
-  --tema-dulap-margine: oklch(0.68 0.006 255);
-  --tema-dulap-interior: oklch(0.32 0.005 255);
-  --tema-dulap-afis: oklch(0.38 0.004 255);
-  --tema-dulap-raft: oklch(0.62 0.008 250);
-  --tema-dulap-lampa: oklch(0.96 0.06 95);
-  --tema-dulap-scris: oklch(0.86 0.12 88);
-  --tema-dulap-text: oklch(0.95 0.004 255);
-  --tema-dulap-text-slab: oklch(0.8 0.004 255);
+  --tema-dulap-camera: var(--tema-retro-lemn);
+  --tema-dulap-metal: var(--tema-retro-carcasa);
+  --tema-dulap-metal-slab: var(--tema-retro-carcasa-slab);
+  --tema-dulap-margine: var(--tema-retro-contur);
+  --tema-dulap-interior: var(--tema-retro-ecran);
+  --tema-dulap-afis: var(--tema-retro-ecran-slab);
+  --tema-dulap-raft: oklch(0.42 0.04 80);
+  --tema-dulap-lampa: var(--tema-retro-fosfor);
+  --tema-dulap-scris: var(--tema-retro-chihlimbar);
+  --tema-dulap-text: oklch(0.85 0.11 148);
+  --tema-dulap-text-slab: oklch(0.71 0.07 150);
 }
 
 @theme inline {
   --color-fundal: var(--tema-fundal);
+  --color-rama: var(--tema-rama);
+  --color-rama-slab: var(--tema-rama-slab);
+  --color-rama-contur: var(--tema-rama-contur);
+  --color-rama-text: var(--tema-rama-text);
+  --color-sticla: var(--tema-sticla);
   --color-suprafata: var(--tema-suprafata);
   --color-contur: var(--tema-contur);
   --color-text: var(--tema-text);

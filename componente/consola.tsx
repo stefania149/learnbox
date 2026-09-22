@@ -20,7 +20,7 @@ export function Consola({
   }
 
   return (
-    <pre className="overflow-x-auto whitespace-pre-wrap rounded-tema bg-fundal p-4 font-mono text-sm">
+    <pre className="overflow-x-auto whitespace-pre-wrap rounded-tema bg-sticla p-4 font-mono text-sm">
       {iesire.map((linie, i) => (
         <span
           key={i}
