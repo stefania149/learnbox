@@ -1,9 +1,14 @@
 /**
  * Motorul de exerciții: cod rulat pe cazuri de test, comparat mecanic.
  *
- * Verdictul nu trece prin niciun model (principiul 1). Se cheamă expresia din
- * caz, se ia `repr` al valorii și se compară text cu text — de aceea `1` și
- * `1.0` sunt două răspunsuri diferite, ca în exemplul din `PLAN.md` §7.
+ * Verdictul nu trece prin niciun model (principiul 1). La Python se cheamă
+ * expresia din caz, se ia `repr` al valorii și se compară text cu text — de
+ * aceea `1` și `1.0` sunt două răspunsuri diferite, ca în exemplul din
+ * `PLAN.md` §7. La SQL se așază datele cazului, se rulează ce a scris
+ * utilizatorul și se compară rândurile ieșite.
+ *
+ * **Sunt două motoare, dar un singur raport.** Ce se vede pe ecran, cum se
+ * numără cazurile trecute și cum se dă XP nu știu în ce limbă s-a scris.
  *
  * Cazurile se anunță unul câte unul, pe măsură ce trec: dacă al patrulea intră
  * într-o buclă fără sfârșit, primele trei rămân câștigate.
@@ -13,11 +18,30 @@ import {
   RABDARE_MS,
   type LinieIesire,
   type ProgresCaz,
+  type Rezultat,
 } from "@/lib/python/client";
+import { sql } from "@/lib/sql/client";
 import { PRELUDIU, SAMANTA } from "./determinism";
 
-/** `apel` e o expresie Python; `asteptat` e `repr`-ul valorii corecte. */
-export type CazTest = { apel: string; asteptat: string };
+/**
+ * Un caz de test, în ambele limbi.
+ *
+ * La Python, `apel` e expresia care se evaluează și `asteptat` e `repr`-ul
+ * valorii corecte. La SQL nu există un apel: `apel` e eticheta cazului, cea
+ * care se vede în raport („trei angajați, unul fără șef"), `pregatire` face
+ * tabelele, iar `asteptat` e lista de rânduri scrisă ca JSON.
+ */
+export type CazTest = {
+  apel: string;
+  asteptat: string;
+  /** Doar la SQL: instrucțiunile care așază datele înaintea codului. */
+  pregatire?: string;
+  /** Doar la SQL: interogarea care verifică, când codul cerut e `INSERT`/`UPDATE`. */
+  verificare?: string;
+};
+
+/** Pe ce motor se rulează exercițiul. Fără `limbaj` scris nicăieri, e Python. */
+export type Limbaj = "python" | "sql";
 
 export type StareCaz = "trecut" | "picat" | "eroare" | "prea-lung" | "nerulat";
 
@@ -40,7 +64,11 @@ export type Raport = {
   trecute: number;
   total: number;
   iesire: LinieIesire[];
-  /** Traceback-ul real, când codul n-a apucat să ruleze deloc. */
+  /**
+   * Eroarea reală a motorului, când codul n-a apucat să ruleze deloc:
+   * traceback-ul Python, sau plângerea Postgresului. Numele a rămas de la
+   * vremea când exista un singur motor — și e și numele coloanei din bază.
+   */
   eroarePython: string | null;
   /** Secundele de răbdare, când cronometrul a oprit rularea. */
   secunde: number | null;
@@ -73,16 +101,35 @@ _tut_ruleaza()
 `;
 }
 
+/** Cum se pornește o rulare, oricare ar fi motorul din spate. */
+type Lansare = (laProgres: (caz: ProgresCaz) => void) => Promise<Rezultat>;
+
 /**
  * Rulează codul utilizatorului pe cazurile date și întoarce raportul.
  * Nu scrie nimic în baza de date — asta e treaba apelantului.
  */
 export async function evalueaza(
+  limbaj: Limbaj,
   cod: string,
   cazuri: CazTest[],
   laProgres?: (cazuri: RezultatCaz[]) => void,
 ): Promise<Raport> {
-  const sursa = `${PRELUDIU}\n${cod}\n${ham(cazuri)}`;
+  const lanseaza: Lansare =
+    limbaj === "sql"
+      ? (laProgresCaz) =>
+          sql().ruleaza(
+            cod,
+            cazuri.map((c) => ({
+              pregatire: c.pregatire,
+              verificare: c.verificare,
+              asteptat: c.asteptat,
+            })),
+            { laProgres: laProgresCaz },
+          )
+      : (laProgresCaz) =>
+          python().ruleaza(`${PRELUDIU}\n${cod}\n${ham(cazuri)}`, {
+            laProgres: laProgresCaz,
+          });
 
   const stari = new Map<number, ProgresCaz>();
   const imbina = (final: (i: number) => StareCaz): RezultatCaz[] =>
@@ -93,11 +140,9 @@ export async function evalueaza(
         : { ...caz, stare: final(i), primit: null };
     });
 
-  const rezultat = await python().ruleaza(sursa, {
-    laProgres: (caz) => {
-      stari.set(caz.indice, caz);
-      laProgres?.(imbina(() => "nerulat"));
-    },
+  const rezultat = await lanseaza((caz) => {
+    stari.set(caz.indice, caz);
+    laProgres?.(imbina(() => "nerulat"));
   });
 
   // Când cronometrul a tăiat rularea, cazul următor celui din urmă anunțat e

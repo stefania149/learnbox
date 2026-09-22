@@ -18,9 +18,16 @@ import {
   progresNivel,
   setari,
 } from "./schema";
-import { aplicaSeminte, type Exercitiu, type Nivel } from "./seminte";
+import {
+  aplicaSeminte,
+  numeMateriei,
+  type Exercitiu,
+  type Nivel,
+} from "./seminte";
+import { CURS_IMPLICIT, type CheieCurs } from "@/lib/continut/livrate";
 import { adaugaXp, citesteXpTotal } from "./incercari";
 import { PAUZA_ORE, XP } from "@/lib/exercitii/xp";
+import { testeleCapitolului, testeleDuse } from "./teste";
 
 export type StareNivel = "terminat" | "deschis" | "blocat";
 
@@ -35,11 +42,21 @@ export type NivelHarta = {
   briefingCitit: boolean;
 };
 
+/** Un test de pe hartă: al lecției (`nivelId`) sau al capitolului (null). */
+export type TestHarta = {
+  id: number;
+  nivelId: number | null;
+  titlu: string;
+  /** Dus până la capăt măcar o dată. Nu blochează nimic, doar se vede. */
+  dus: boolean;
+};
+
 export type CapitolHarta = {
   id: number;
   nume: string;
   ordine: number;
   niveluri: NivelHarta[];
+  teste: TestHarta[];
 };
 
 export type Harta = {
@@ -110,8 +127,10 @@ async function socoteli(materieId: number) {
   };
 }
 
-export async function hartaCursului(): Promise<Harta> {
-  const materieId = await aplicaSeminte();
+export async function hartaCursului(
+  cheieCurs: CheieCurs = CURS_IMPLICIT,
+): Promise<Harta> {
+  const materieId = await aplicaSeminte(cheieCurs);
   const { capitole, niveluri, exercitii, xpPeExercitiu, incercatele, briefinguri } =
     await socoteli(materieId);
 
@@ -152,14 +171,32 @@ export async function hartaCursului(): Promise<Harta> {
 
   return {
     materieId,
-    materie: "Python",
+    materie: await numeMateriei(cheieCurs),
     xp: await citesteXpTotal(materieId),
-    capitole: capitole.map((c) => ({
-      id: c.id,
-      nume: c.nume,
-      ordine: c.ordine,
-      niveluri: hartaNiveluri.get(c.id) ?? [],
-    })),
+    capitole: await Promise.all(
+      capitole.map(async (c) => {
+        const aleLui = hartaNiveluri.get(c.id) ?? [];
+        const teste = await testeleCapitolului(
+          c.id,
+          aleLui.map((n) => n.id),
+        );
+        const duse = await testeleDuse(teste.map((t) => t.id));
+        // În ordinea lecțiilor, iar cel de capitol la urmă: baza le dă în
+        // ordinea în care le-a scris, care n-are nicio legătură cu drumul.
+        const locul = (nivelId: number | null) =>
+          nivelId === null
+            ? Number.MAX_SAFE_INTEGER
+            : aleLui.findIndex((n) => n.id === nivelId);
+        teste.sort((a, b) => locul(a.nivelId) - locul(b.nivelId));
+        return {
+          id: c.id,
+          nume: c.nume,
+          ordine: c.ordine,
+          niveluri: aleLui,
+          teste: teste.map((t) => ({ ...t, dus: duse.has(t.id) })),
+        };
+      }),
+    ),
   };
 }
 
@@ -171,8 +208,11 @@ export type Lectie = {
 };
 
 /** Lecția cerută, cu exercițiile ei și cu ce s-a încercat deja din ele. */
-export async function citesteLectie(nivelId: number): Promise<Lectie | null> {
-  const materieId = await aplicaSeminte();
+export async function citesteLectie(
+  nivelId: number,
+  cheieCurs: CheieCurs = CURS_IMPLICIT,
+): Promise<Lectie | null> {
+  const materieId = await aplicaSeminte(cheieCurs);
   const { baza } = await deschideBaza();
 
   const gasit = await baza.select().from(nivel).where(eq(nivel.id, nivelId));

@@ -20,6 +20,7 @@ import { mesajEroare } from "@/lib/date/erori";
 import { citesteDiagnostic, type DiagnosticDate } from "@/lib/date/diagnostic";
 import { deschideBaza } from "@/lib/date/client";
 import { python } from "@/lib/python/client";
+import { sql } from "@/lib/sql/client";
 import {
   aplicaActualizarea,
   ceriInstalarea,
@@ -101,6 +102,10 @@ export default function Aplicatia() {
       await deschideBaza();
       setPregatire({ fel: "lucreaza", ce: "Se aduce Python…" });
       await python().pregateste();
+      // Al doilea motor, cel pe care rulează cursul de SQL. E același
+      // Postgres ca al bazei, deci de obicei vine din depozit.
+      setPregatire({ fel: "lucreaza", ce: "Se aduce Postgres…" });
+      await sql().pregateste();
       setPregatire({ fel: "gata" });
     } catch (e) {
       setPregatire({ fel: "eroare", mesaj: mesajEroare(e) });

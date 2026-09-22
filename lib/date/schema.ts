@@ -77,6 +77,9 @@ export const exercitiu = pgTable(
     ordine: integer("ordine"),
     // 'completeaza' | 'repara' | 'scrie' | 'liber'
     tip: text("tip").notNull(),
+    // 'python' | 'sql'. Pe ce motor se ruleaza. Nul inseamna Python: asa erau
+    // toate exercitiile pana la cursul de SQL.
+    limbaj: text("limbaj"),
     enunt: text("enunt").notNull(),
     codInitial: text("cod_initial"),
     solutie: text("solutie"),
@@ -89,12 +92,23 @@ export const exercitiu = pgTable(
   (t) => [unique("exercitiu_cheie").on(t.nivelId, t.cheie)],
 );
 
-export const test = pgTable("test", {
-  id: serial("id").primaryKey(),
-  nivelId: integer("nivel_id").references(() => nivel.id),
-  capitolId: integer("capitol_id").references(() => capitol.id),
-  intrebari: jsonb("intrebari"),
-});
+/**
+ * Testul unei lectii sau al unui capitol (`PLAN.md` §8). Unul singur de
+ * fiecare, de-aia `nivel_id` si `capitol_id` sunt unice: in Postgres, NULL nu
+ * se bate cu NULL, deci testele de capitol nu se incurca intre ele.
+ */
+export const test = pgTable(
+  "test",
+  {
+    id: serial("id").primaryKey(),
+    nivelId: integer("nivel_id").references(() => nivel.id),
+    capitolId: integer("capitol_id").references(() => capitol.id),
+    cheie: text("cheie"),
+    titlu: text("titlu"),
+    intrebari: jsonb("intrebari"),
+  },
+  (t) => [unique("test_nivel").on(t.nivelId), unique("test_capitol").on(t.capitolId)],
+);
 
 // —— Progresul ————————————————————————————————————————————————
 

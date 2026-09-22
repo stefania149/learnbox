@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Ecran,
   AntetEcran,
@@ -10,6 +11,7 @@ import {
 } from "@/componente/ecran";
 import { Buton, ButonLegatura } from "@/componente/buton";
 import { mesajEroare } from "@/lib/date/erori";
+import { cheieCursului, cu } from "@/lib/continut/livrate";
 import {
   hartaCursului,
   istoricIncercari,
@@ -30,14 +32,32 @@ const CAND = new Intl.DateTimeFormat("ro-RO", {
   minute: "2-digit",
 });
 
-export default function EcranProgres() {
+export default function Pagina() {
+  return (
+    <Suspense
+      fallback={
+        <Ecran>
+          <AntetEcran titlu="Progres" />
+          <ContinutEcran>
+            <Panou titlu="Progres">{null}</Panou>
+          </ContinutEcran>
+        </Ecran>
+      }
+    >
+      <EcranProgres />
+    </Suspense>
+  );
+}
+
+function EcranProgres() {
+  const cheie = cheieCursului(useSearchParams().get("curs"));
   const [stare, setStare] = useState<Stare>({ fel: "se-incarca" });
   const [incarcari, reincarca] = useState(0);
 
   useEffect(() => {
     let anulat = false;
     (async () => {
-      const harta = await hartaCursului();
+      const harta = await hartaCursului(cheie);
       const istoric = await istoricIncercari();
       if (!anulat) setStare({ fel: "gata", harta, istoric });
     })().catch((e: unknown) => {
@@ -46,7 +66,7 @@ export default function EcranProgres() {
     return () => {
       anulat = true;
     };
-  }, [incarcari]);
+  }, [incarcari, cheie]);
 
   return (
     <Ecran>
@@ -82,7 +102,7 @@ export default function EcranProgres() {
       </ContinutEcran>
 
       <BaraActiuni>
-        <ButonLegatura href="/curs/">Înapoi la curs</ButonLegatura>
+        <ButonLegatura href={cu("/curs/", cheie)}>Înapoi la curs</ButonLegatura>
         <ButonLegatura href="/copie/" fel="secundar">
           Copie de progres
         </ButonLegatura>

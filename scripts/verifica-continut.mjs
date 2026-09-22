@@ -1,27 +1,23 @@
 /**
- * Verifică, cu Python adevărat, că fiecare exercițiu livrat e coerent:
+ * Verifică, cu motorul adevărat, că fiecare exercițiu livrat e coerent:
  *
  * - soluția trece toate cazurile ei;
  * - codul de pornire **nu** le trece pe toate (altfel exercițiul e deja făcut);
  * - fiecare exercițiu are explicație predefinită și cel puțin trei cazuri.
  *
- * Rulează aceleași bucăți ca aplicația: preludiul de determinism și hamul de
- * cazuri din `lib/exercitii`. Se cheamă cu `npm run continut:verifica`.
+ * Rulează aceleași bucăți ca aplicația: la Python, preludiul de determinism și
+ * hamul de cazuri din `lib/exercitii`; la SQL, același Postgres în WASM, cu
+ * schema făcută din nou înaintea fiecărui caz.
+ *
+ * Cursul se dă ca argument (`npm run continut:verifica sql`); fără argument se
+ * ia cel implicit.
  */
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadPyodide } from "pyodide";
 import { PRELUDIU, SAMANTA } from "../lib/exercitii/determinism.ts";
 import { citesteCurs } from "../lib/continut/format.ts";
 
-// Se citește din fișierul de curs livrat, prin aceeași verificare de format pe
-// care o face aplicația la încărcare (pasul 11): dacă fișierul e stricat, se
-// află aici, nu în browserul cuiva.
-//
-// Cursul se dă ca argument (`npm run continut:verifica sql`); fără argument se
-// ia cel implicit. De la pasul 12 fișierele nu mai sunt scrise de mână, deci
-// verificarea trebuie să meargă peste oricare dintre ele.
 const radacina = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHEIE = process.argv[2] ?? "python";
 const CURS = citesteCurs(
@@ -30,13 +26,16 @@ const CURS = citesteCurs(
   ),
 );
 
-/** Cât lăsăm un caz să meargă, în pași de interpretor. */
+/** Cât lăsăm un caz să meargă, în pași de interpretor (Python). */
 const PASI_MAXIM = 500_000;
 
-const pyodide = await loadPyodide();
+/** Cât lăsăm o interogare să meargă (SQL). */
+const RABDARE_SQL = "5s";
 
 let cazuriRulate = 0;
 const plangeri = [];
+
+/* ————————————————————————— Python ————————————————————————— */
 
 /** Aceeași comparare ca în motor: `repr` al valorii, text cu text. */
 function ham(cazuri) {
@@ -82,10 +81,59 @@ _tut_json.dumps(_tut_rezultate)
 `;
 }
 
-async function treceCazurile(cod, cazuri) {
-  const iesite = JSON.parse(
-    await pyodide.runPythonAsync(`${PRELUDIU}\n${cod}\n${ham(cazuri)}`),
+async function motorPython() {
+  const { loadPyodide } = await import("pyodide");
+  const pyodide = await loadPyodide();
+  return async (cod, cazuri) =>
+    JSON.parse(await pyodide.runPythonAsync(`${PRELUDIU}\n${cod}\n${ham(cazuri)}`));
+}
+
+/* —————————————————————————— SQL —————————————————————————— */
+
+/** Aceeași serializare ca în `public/sql.worker.js`. */
+function scrieRandurile(rezultat) {
+  const coloane = (rezultat?.fields ?? []).map((f) => f.name);
+  const randuri = (rezultat?.rows ?? []).map((r) =>
+    coloane.map((c) => {
+      const v = r[c];
+      if (typeof v === "bigint") return Number(v);
+      if (v instanceof Date) return v.toISOString();
+      return v;
+    }),
   );
+  return JSON.stringify(randuri);
+}
+
+async function motorSql() {
+  const { PGlite } = await import("@electric-sql/pglite");
+  const baza = await PGlite.create();
+  await baza.exec(`SET statement_timeout = '${RABDARE_SQL}';`);
+
+  return async (cod, cazuri) => {
+    const iesite = [];
+    for (const caz of cazuri) {
+      try {
+        await baza.exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+        if (caz.pregatire) await baza.exec(caz.pregatire);
+        const ale = await baza.exec(cod);
+        const deComparat = caz.verificare
+          ? await baza.query(caz.verificare)
+          : ale[ale.length - 1];
+        iesite.push(scrieRandurile(deComparat));
+      } catch (e) {
+        iesite.push((e?.message ?? String(e)).split("\n")[0].trim());
+      }
+    }
+    return iesite;
+  };
+}
+
+/* ———————————————————————— Verificarea ———————————————————————— */
+
+const ruleaza = CURS.limbaj === "sql" ? await motorSql() : await motorPython();
+
+async function treceCazurile(cod, cazuri) {
+  const iesite = await ruleaza(cod, cazuri);
   cazuriRulate += cazuri.length;
   return cazuri.map((caz, i) => ({
     apel: caz.apel,
@@ -131,7 +179,7 @@ const ecrane = NIVELURI.reduce((s, n) => s + n.briefing.length, 0);
 const capitole = CURS.capitole.map((c) => `„${c.nume}"`).join(", ");
 
 console.log(
-  `${CURS.materie} — ${capitole}: ${NIVELURI.length} lecții, ` +
+  `${CURS.materie} (${CURS.limbaj}) — ${capitole}: ${NIVELURI.length} lecții, ` +
     `${ecrane} ecrane de briefing, ${exercitii} exerciții, ` +
     `${cazuriRulate} rulări de cazuri.`,
 );

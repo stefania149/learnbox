@@ -1,0 +1,755 @@
+{
+  "format": "tutore-curs",
+  "versiune": 1,
+  "materie": "SQL",
+  "limbaj": "sql",
+  "capitole": [
+    {
+      "cheie": "intrebari-puse-unui-tabel",
+      "nume": "Întrebări puse unui tabel",
+      "test": {
+        "cheie": "test-intrebari-puse-unui-tabel",
+        "titlu": "Test de capitol: Întrebări puse unui tabel",
+        "intrebari": [
+          {
+            "cheie": "ordinea-clauzelor",
+            "intrebare": "În ce ordine se scriu, când apar toate?",
+            "variante": [
+              "`SELECT` · `FROM` · `WHERE` · `GROUP BY` · `HAVING` · `ORDER BY`",
+              "`SELECT` · `FROM` · `GROUP BY` · `WHERE` · `ORDER BY` · `HAVING`",
+              "`FROM` · `SELECT` · `WHERE` · `ORDER BY` · `GROUP BY` · `HAVING`"
+            ],
+            "corect": 0,
+            "explicatie": "Asta e ordinea în care se scriu, și e și ordinea în care au sens: alegi tabelul, tai rândurile, faci grămezile, tai grămezile, și abia la urmă pui ordinea pe ce a rămas."
+          },
+          {
+            "cheie": "null-peste-tot",
+            "intrebare": "Care afirmație despre `NULL` e adevărată?",
+            "variante": [
+              "`NULL` e totuna cu zero, sau cu textul gol",
+              "`NULL` nu se compară cu `=`; se întreabă cu `IS NULL`",
+              "`NULL` apare doar după un `LEFT JOIN`"
+            ],
+            "corect": 1,
+            "explicatie": "`NULL` e lipsa unei valori, nu o valoare. Nu e zero, nu e text gol, și nu e egal cu nimic — nici cu alt `NULL`. Poate apărea oriunde o coloană n-a fost completată, nu doar după un `JOIN`."
+          },
+          {
+            "cheie": "count-sum-gol",
+            "intrebare": "Pe un tabel gol, ce dau `COUNT(*)` și `SUM(salariu)`?",
+            "variante": [
+              "Amândouă `0`",
+              "`COUNT(*)` dă `0`, `SUM` dă `NULL`",
+              "Amândouă `NULL`"
+            ],
+            "corect": 1,
+            "explicatie": "Se pot număra zero lucruri — iese `0`. Dar zero lucruri adunate nu fac zero, fac nimic, adică `NULL`. E marginea care apare în aproape fiecare exercițiu din capitol."
+          },
+          {
+            "cheie": "de-ce-order-by-in-exercitii",
+            "intrebare": "De ce aproape fiecare exercițiu din capitol cere `ORDER BY`?",
+            "variante": [
+              "Ca să arate mai frumos rezultatul",
+              "Fiindcă altfel rezultatul n-ar fi același de fiecare dată, și n-ar avea ce compara",
+              "Fiindcă Postgres o cere"
+            ],
+            "corect": 1,
+            "explicatie": "Verdictul se dă comparând rândurile ieșite cu cele așteptate, în ordine. Fără o ordine cerută, aceeași interogare ar putea da aceleași rânduri altfel aranjate, iar comparația ar fi pe noroc."
+          },
+          {
+            "cheie": "unde-ruleaza",
+            "intrebare": "Unde rulează SQL-ul pe care-l scrii aici?",
+            "variante": [
+              "Pe un server, care trimite înapoi rezultatul",
+              "Într-un Postgres pornit în browser, gol, care moare când închizi fila",
+              "Într-o simulare scrisă de noi, care înțelege doar câteva comenzi"
+            ],
+            "corect": 1,
+            "explicatie": "E Postgres adevărat, compilat pentru browser, pornit gol pentru fiecare caz. De-aia mesajele de eroare sunt cele reale, și de-aia poți scrie orice — nu există un server și nu pleacă nimic de pe calculatorul tău."
+          }
+        ]
+      },
+      "niveluri": [
+        {
+          "cheie": "ce-ceri-si-de-unde",
+          "nume": "Ce ceri și de unde",
+          "test": {
+            "cheie": "test-ce-ceri-si-de-unde",
+            "titlu": "Test: Ce ceri și de unde",
+            "intrebari": [
+              {
+                "cheie": "ce-face-where",
+                "intrebare": "Ce alege `WHERE` dintr-un tabel?",
+                "variante": [
+                  "Coloanele care se văd în rezultat",
+                  "Rândurile care trec condiția",
+                  "Ordinea în care ies rândurile"
+                ],
+                "corect": 1,
+                "explicatie": "`SELECT` spune ce coloane vrei, `WHERE` spune care rânduri intră în rezultat. Sunt două tăieturi diferite prin același tabel: una pe verticală, alta pe orizontală."
+              },
+              {
+                "cheie": "text-cu-apostrofuri",
+                "intrebare": "Cum se scrie o comparație cu text în SQL?",
+                "variante": [
+                  "`departament = \"vanzari\"`",
+                  "`departament = 'vanzari'`",
+                  "`departament = vanzari`"
+                ],
+                "corect": 1,
+                "explicatie": "Textul se scrie între apostrofuri simple. Ghilimelele duble înseamnă altceva în Postgres — un nume de coloană sau de tabel — iar fără nimic în jur, `vanzari` ar fi citit tot ca nume de coloană și ai primi o eroare."
+              },
+              {
+                "cheie": "peste-e-strict",
+                "intrebare": "`WHERE salariu > 3000`: intră cineva cu salariul exact 3000?",
+                "variante": [
+                  "Da, „peste\" include și pragul",
+                  "Nu, `>` e strict; pentru prag inclusiv se scrie `>=`",
+                  "Depinde de tipul coloanei"
+                ],
+                "corect": 1,
+                "explicatie": "`>` înseamnă strict mai mare. Cine are fix 3000 rămâne pe dinafară. Dacă enunțul spune „de la 3000 în sus\", se scrie `>=` — e o diferență de un rând care se vede imediat în cazurile de test."
+              }
+            ]
+          },
+          "briefing": [
+            {
+              "titlu": "Un tabel e o listă cu rubrici",
+              "text": "Datele stau în tabele. Un tabel are coloane — rubricile, aceleași pentru toată lumea — și rânduri: câte o intrare. Tabelul `angajat` are coloanele `nume`, `departament` și `salariu`, iar fiecare rând e un om."
+            },
+            {
+              "titlu": "`SELECT` spune ce, `FROM` spune de unde",
+              "text": "O interogare e o întrebare pusă tabelului. `SELECT` enumeră coloanele care te interesează, `FROM` spune din ce tabel. Punctul și virgula de la capăt încheie instrucțiunea.",
+              "cod": "SELECT nume, salariu\nFROM angajat;"
+            },
+            {
+              "titlu": "`WHERE` alege rândurile",
+              "text": "Fără `WHERE` primești toate rândurile. Cu `WHERE` primești doar pe cele care trec condiția: `>`, `<`, `=`, `<>`. Textul se scrie între apostrofuri simple: `'vanzari'`.\n\nDeocamdată rândurile vin în ordinea în care au fost puse în tabel. Lecția următoare arată de ce nu te poți bizui pe asta.",
+              "cod": "SELECT nume\nFROM angajat\nWHERE salariu > 4000;"
+            }
+          ],
+          "exercitii": [
+            {
+              "cheie": "completeaza-interogarea-cere-numele-tuturor-angajatilor-completeaza",
+              "tip": "completeaza",
+              "enunt": "Interogarea cere numele tuturor angajaților. Completează golul cu tabelul din care se cer.",
+              "codInitial": "SELECT nume\nFROM ___;\n",
+              "solutie": "SELECT nume\nFROM angajat;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei angajați",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\"],[\"Ion\"],[\"Maria\"]]"
+                },
+                {
+                  "apel": "un singur angajat",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000);",
+                  "asteptat": "[[\"Radu\"]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "`___` nu e nume de tabel, e semnul golului. Postgres îl citește ca pe un nume, nu găsește niciun tabel așa și se oprește cu `relation \"___\" does not exist`. După `FROM` se scrie tabelul din care se cer datele — aici, `angajat`."
+            },
+            {
+              "cheie": "repara-interogarea-ar-trebui-sa-dea-numele",
+              "tip": "repara",
+              "enunt": "Interogarea ar trebui să dea numele angajaților cu salariul **peste** 4000, dar dă exact pe ceilalți. Repară condiția.",
+              "codInitial": "SELECT nume\nFROM angajat\nWHERE salariu < 4000;\n",
+              "solutie": "SELECT nume\nFROM angajat\nWHERE salariu > 4000;\n",
+              "cazuriTest": [
+                {
+                  "apel": "doi din trei trec pragul",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\"],[\"Maria\"]]"
+                },
+                {
+                  "apel": "nimeni peste prag",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ion','contabilitate',3100),('Petru','depozit',2000);",
+                  "asteptat": "[]"
+                },
+                {
+                  "apel": "unul chiar pe prag",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Dan','tehnic',4000),('Ana','vanzari',5200);",
+                  "asteptat": "[[\"Ana\"]]"
+                }
+              ],
+              "explicatiePredefinita": "`<` și `>` arată în direcții opuse: `salariu < 4000` cere sub prag, `salariu > 4000` cere peste. Și e strict — cine are exact 4000 nu e „peste 4000\" și nu intră în listă."
+            },
+            {
+              "cheie": "scrie-scrie-o-interogare-care-intoarce-numele",
+              "tip": "scrie",
+              "enunt": "Scrie o interogare care întoarce numele și salariul angajaților din departamentul „vanzari\". Codul dat îi aduce pe toți.",
+              "codInitial": "SELECT nume, salariu\nFROM angajat;\n",
+              "solutie": "SELECT nume, salariu\nFROM angajat\nWHERE departament = 'vanzari';\n",
+              "cazuriTest": [
+                {
+                  "apel": "doi la vânzări, unul la contabilitate",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\",5200],[\"Maria\",4300]]"
+                },
+                {
+                  "apel": "nimeni la vânzări",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000),('Ion','contabilitate',3100);",
+                  "asteptat": "[]"
+                },
+                {
+                  "apel": "toți la vânzări",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\",5200],[\"Maria\",4300]]"
+                }
+              ],
+              "explicatiePredefinita": "Fără `WHERE`, interogarea aduce toate rândurile tabelului. Condiția se pune pe coloana `departament`, iar textul se scrie între apostrofuri simple: `departament = 'vanzari'`."
+            }
+          ]
+        },
+        {
+          "cheie": "ordinea-nu-vine-de-la-sine",
+          "nume": "Ordinea nu vine de la sine",
+          "test": {
+            "cheie": "test-ordinea-nu-vine-de-la-sine",
+            "titlu": "Test: Ordinea nu vine de la sine",
+            "intrebari": [
+              {
+                "cheie": "fara-order-by",
+                "intrebare": "O interogare fără `ORDER BY` — în ce ordine vin rândurile?",
+                "variante": [
+                  "În ordinea în care au fost adăugate, întotdeauna",
+                  "În nicio ordine promisă: baza le dă cum îi convine, și se poate schimba",
+                  "Alfabetic după prima coloană"
+                ],
+                "corect": 1,
+                "explicatie": "Un tabel nu e o listă ordonată. Pe date puține pare că vin în ordinea adăugării, dar nu e o promisiune: ordinea se poate schimba când tabelul crește sau când apare un index. Dacă ordinea contează, o ceri."
+              },
+              {
+                "cheie": "limit-fara-order",
+                "intrebare": "Ce înseamnă `LIMIT 3` fără `ORDER BY`?",
+                "variante": [
+                  "Primele trei rânduri, adică cele mai mari",
+                  "Trei rânduri oarecare, fără să știi care",
+                  "Nu se poate scrie `LIMIT` fără `ORDER BY`"
+                ],
+                "corect": 1,
+                "explicatie": "„Primele trei\" înseamnă ceva doar după ce ai spus ce înseamnă primul. Fără `ORDER BY`, `LIMIT` taie trei rânduri la întâmplare — se scrie, dar nu răspunde la nicio întrebare."
+              },
+              {
+                "cheie": "desc-pe-ce-coloana",
+                "intrebare": "Se poate sorta după o coloană care nu apare în `SELECT`?",
+                "variante": [
+                  "Da",
+                  "Nu, coloana trebuie să fie în lista cerută",
+                  "Doar dacă îi dai un alias"
+                ],
+                "corect": 0,
+                "explicatie": "Da. `SELECT nume FROM angajat ORDER BY salariu DESC` e o interogare bună: sortarea se face pe rândurile întregi, nu pe ce-ai ales să se vadă. E util când vrei o listă curată, ordonată după ceva ce nu vrei afișat."
+              }
+            ]
+          },
+          "briefing": [
+            {
+              "titlu": "Baza nu promite nicio ordine",
+              "text": "Un tabel nu e o listă ordonată. Fără instrucțiuni, baza dă rândurile în ordinea care îi convine ei, iar ordinea aia se poate schimba mâine, după ce tabelul crește sau după ce cineva adaugă un index. Dacă ordinea contează, o ceri."
+            },
+            {
+              "titlu": "`ORDER BY` cere ordinea",
+              "text": "`ORDER BY coloana` sortează crescător, `DESC` întoarce sensul. Se poate sorta după orice coloană, chiar și după una care nu apare în `SELECT`.",
+              "cod": "SELECT nume, salariu\nFROM angajat\nORDER BY salariu DESC;"
+            },
+            {
+              "titlu": "`LIMIT` taie coada",
+              "text": "`LIMIT 3` oprește rezultatul după trei rânduri. Are sens doar lângă `ORDER BY`: „primii trei\" înseamnă ceva numai după ce ai spus ce înseamnă primul.",
+              "cod": "SELECT nume\nFROM angajat\nORDER BY salariu DESC\nLIMIT 3;"
+            }
+          ],
+          "exercitii": [
+            {
+              "cheie": "completeaza-interogarea-trebuie-sa-dea-angajatii-de",
+              "tip": "completeaza",
+              "enunt": "Interogarea trebuie să dea angajații de la salariul cel mai mare la cel mai mic. Completează golul.",
+              "codInitial": "SELECT nume, salariu\nFROM angajat\nORDER BY salariu ___;\n",
+              "solutie": "SELECT nume, salariu\nFROM angajat\nORDER BY salariu DESC;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei salarii diferite",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\",5200],[\"Maria\",4300],[\"Ion\",3100]]"
+                },
+                {
+                  "apel": "un singur angajat",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000);",
+                  "asteptat": "[[\"Radu\",6000]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "`ORDER BY salariu` sortează crescător, de la mic la mare. Cuvântul care întoarce sensul e `DESC`, de la descendent."
+            },
+            {
+              "cheie": "repara-interogarea-ar-trebui-sa-dea-angajatul",
+              "tip": "repara",
+              "enunt": "Interogarea ar trebui să dea angajatul cu salariul cel mai **mare**, dar îl dă pe cel mai prost plătit. Repară.",
+              "codInitial": "SELECT nume, salariu\nFROM angajat\nORDER BY salariu\nLIMIT 1;\n",
+              "solutie": "SELECT nume, salariu\nFROM angajat\nORDER BY salariu DESC\nLIMIT 1;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei salarii diferite",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"Ana\",5200]]"
+                },
+                {
+                  "apel": "un singur angajat",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000);",
+                  "asteptat": "[[\"Radu\",6000]]"
+                },
+                {
+                  "apel": "cinci angajați",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300),('Radu','tehnic',6000),('Sorin','depozit',2500);",
+                  "asteptat": "[[\"Radu\",6000]]"
+                }
+              ],
+              "explicatiePredefinita": "`ORDER BY salariu LIMIT 1` sortează crescător și taie după primul rând, deci îți dă cel mai mic salariu. Cu `DESC` primul rând e cel mai mare."
+            },
+            {
+              "cheie": "scrie-scrie-o-interogare-care-intoarce-numele",
+              "tip": "scrie",
+              "enunt": "Scrie o interogare care întoarce numele primilor trei angajați după salariu, de la cel mai mare. Codul dat îi aduce pe toți, în ordinea bună.",
+              "codInitial": "SELECT nume\nFROM angajat\nORDER BY salariu DESC;\n",
+              "solutie": "SELECT nume\nFROM angajat\nORDER BY salariu DESC\nLIMIT 3;\n",
+              "cazuriTest": [
+                {
+                  "apel": "cinci angajați",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300),('Radu','tehnic',6000),('Sorin','depozit',2500);",
+                  "asteptat": "[[\"Radu\"],[\"Ana\"],[\"Maria\"]]"
+                },
+                {
+                  "apel": "doi angajați, mai puțini decât cere",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100);",
+                  "asteptat": "[[\"Ana\"],[\"Ion\"]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "Ordinea e deja cerută; ce lipsește e oprirea. `LIMIT 3` taie rezultatul după trei rânduri. Dacă tabelul are mai puține, `LIMIT` nu se plânge — dă câte sunt."
+            }
+          ]
+        },
+        {
+          "cheie": "numarat-si-adunat",
+          "nume": "Numărat și adunat",
+          "test": {
+            "cheie": "test-numarat-si-adunat",
+            "titlu": "Test: Numărat și adunat",
+            "intrebari": [
+              {
+                "cheie": "count-stea-vs-coloana",
+                "intrebare": "Prin ce diferă `COUNT(*)` de `COUNT(salariu)`?",
+                "variante": [
+                  "Prin nimic, sunt două scrieri ale aceluiași lucru",
+                  "`COUNT(*)` numără rândurile, `COUNT(salariu)` sare peste cele în care salariul lipsește",
+                  "`COUNT(*)` e mai rapid, atât"
+                ],
+                "corect": 1,
+                "explicatie": "`COUNT(coloana)` numără doar valorile care există — rândurile cu `NULL` nu intră. Pe un tabel fără goluri dau același număr, și de-aia diferența se descoperă târziu, pe date adevărate."
+              },
+              {
+                "cheie": "sum-pe-tabel-gol",
+                "intrebare": "Ce întoarce `SELECT SUM(salariu) FROM angajat` pe un tabel gol?",
+                "variante": [
+                  "`0`",
+                  "`NULL`",
+                  "Niciun rând"
+                ],
+                "corect": 1,
+                "explicatie": "Un rând, cu `NULL` în el. Zero lucruri adunate nu fac zero — nu fac nimic, iar „nimic\" în SQL se scrie `NULL`. `COUNT`, în schimb, dă `0`: se pot număra zero lucruri."
+              },
+              {
+                "cheie": "avg-zecimale",
+                "intrebare": "De ce `AVG(salariu)` întoarce `4200.0000000000000000` în loc de `4200`?",
+                "variante": [
+                  "E o greșeală a bazei",
+                  "Media e `numeric`, iar baza ține toată precizia până îi spui câte zecimale vrei",
+                  "Fiindcă salariile sunt numere întregi"
+                ],
+                "corect": 1,
+                "explicatie": "Media se calculează în `numeric`, un tip care nu pierde precizie, și se afișează cu tot ce are. Se taie cu `ROUND(AVG(salariu), 2)`. Contează aici, fiindcă rezultatele se compară text cu text."
+              }
+            ]
+          },
+          "briefing": [
+            {
+              "titlu": "O întrebare, un singur rând",
+              "text": "Până acum fiecare rând din tabel dădea un rând în rezultat. Funcțiile de adunare strâng tot tabelul într-un singur rând: `COUNT` numără, `SUM` adună, `MIN` și `MAX` scot capetele.",
+              "cod": "SELECT COUNT(*)\nFROM angajat;"
+            },
+            {
+              "titlu": "`COUNT(*)` și `COUNT(coloana)` nu sunt același lucru",
+              "text": "`COUNT(*)` numără rândurile. `COUNT(salariu)` numără rândurile în care `salariu` are o valoare — sare peste cele goale, peste `NULL`. Pe un tabel fără goluri dau la fel, și de-aia diferența se descoperă târziu și doare."
+            },
+            {
+              "titlu": "Media vine cu coadă de zecimale",
+              "text": "`AVG(salariu)` nu întoarce `4200`, ci `4200.0000000000000000`: baza păstrează precizia până când îi spui tu cât vrei. `ROUND(AVG(salariu), 2)` taie la două zecimale.\n\nPe un tabel gol nu există medie, iar `SUM` n-are ce aduna: amândouă întorc `NULL`, nu zero.",
+              "cod": "SELECT ROUND(AVG(salariu), 2)\nFROM angajat;"
+            }
+          ],
+          "exercitii": [
+            {
+              "cheie": "completeaza-interogarea-trebuie-sa-intoarca-numarul-de",
+              "tip": "completeaza",
+              "enunt": "Interogarea trebuie să întoarcă numărul de angajați. Completează golul cu funcția care numără.",
+              "codInitial": "SELECT ___(*)\nFROM angajat;\n",
+              "solutie": "SELECT COUNT(*)\nFROM angajat;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei angajați",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[3]]"
+                },
+                {
+                  "apel": "un singur angajat",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000);",
+                  "asteptat": "[[1]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[[0]]"
+                }
+              ],
+              "explicatiePredefinita": "Funcția care numără rândurile se cheamă `COUNT`, iar `*` înseamnă „rândul întreg, indiferent ce e în el\". Pe un tabel gol întoarce `0`, nu niciun rând: rezultatul are tot un rând, cu zero în el."
+            },
+            {
+              "cheie": "repara-interogarea-ar-trebui-sa-intoarca-suma",
+              "tip": "repara",
+              "enunt": "Interogarea ar trebui să întoarcă **suma** salariilor, dar întoarce câte sunt. Repară.",
+              "codInitial": "SELECT COUNT(salariu)\nFROM angajat;\n",
+              "solutie": "SELECT SUM(salariu)\nFROM angajat;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei salarii",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[12600]]"
+                },
+                {
+                  "apel": "un singur salariu",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Radu','tehnic',6000);",
+                  "asteptat": "[[6000]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[[null]]"
+                }
+              ],
+              "explicatiePredefinita": "`COUNT` numără câte valori sunt, `SUM` le adună. Pe un tabel gol `COUNT` dă `0`, dar `SUM` dă `NULL`: zero lucruri adunate nu fac zero, nu fac nimic."
+            },
+            {
+              "cheie": "scrie-scrie-o-interogare-care-intoarce-salariul",
+              "tip": "scrie",
+              "enunt": "Scrie o interogare care întoarce salariul mediu, rotunjit la două zecimale. Codul dat dă media, dar cu toate zecimalele ei.",
+              "codInitial": "SELECT AVG(salariu)\nFROM angajat;\n",
+              "solutie": "SELECT ROUND(AVG(salariu), 2)\nFROM angajat;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei salarii, medie rotundă",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"4200.00\"]]"
+                },
+                {
+                  "apel": "două salarii, medie cu jumătate",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',1000),('Ion','contabilitate',1001);",
+                  "asteptat": "[[\"1000.50\"]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[[null]]"
+                }
+              ],
+              "explicatiePredefinita": "`AVG` păstrează toată precizia, de-aia iese `4200.0000000000000000`. `ROUND(AVG(salariu), 2)` cere două zecimale. Pe un tabel gol nu există medie: `AVG` dă `NULL`, iar `ROUND` de `NULL` tot `NULL` rămâne."
+            }
+          ]
+        },
+        {
+          "cheie": "cate-unul-pentru-fiecare-grup",
+          "nume": "Câte unul pentru fiecare grup",
+          "test": {
+            "cheie": "test-cate-unul-pentru-fiecare-grup",
+            "titlu": "Test: Câte unul pentru fiecare grup",
+            "intrebari": [
+              {
+                "cheie": "where-vs-having",
+                "intrebare": "Vrei doar departamentele cu mai mult de doi oameni. Unde pui condiția?",
+                "variante": [
+                  "În `WHERE`",
+                  "În `HAVING`, după `GROUP BY`",
+                  "În `SELECT`"
+                ],
+                "corect": 1,
+                "explicatie": "`WHERE` lucrează pe rânduri, înainte de grupare — în clipa aia grămezile încă nu există, deci nu poți întreba cât de mari sunt. `HAVING` lucrează pe grupuri, după. Se pot folosi amândouă în aceeași interogare."
+              },
+              {
+                "cheie": "coloana-in-select",
+                "intrebare": "`SELECT departament, nume, COUNT(*) FROM angajat GROUP BY departament` — ce se întâmplă?",
+                "variante": [
+                  "Merge, `nume` ia prima valoare din grup",
+                  "Baza se oprește cu o eroare: `nume` nu e nici grupat, nici socotit",
+                  "Merge, dar `nume` iese gol"
+                ],
+                "corect": 1,
+                "explicatie": "Într-o grămadă de trei oameni nu există „numele\" — sunt trei. Postgres cere ca fiecare coloană din `SELECT` să fie ori cea după care ai grupat, ori o socoteală peste grup, și îți spune asta răspicat."
+              },
+              {
+                "cheie": "grup-pe-tabel-gol",
+                "intrebare": "`SELECT departament, COUNT(*) ... GROUP BY departament` pe un tabel gol — ce iese?",
+                "variante": [
+                  "Un rând, cu zero în el",
+                  "Niciun rând",
+                  "`NULL`"
+                ],
+                "corect": 1,
+                "explicatie": "Grupurile se fac din rândurile care există. Dacă nu există niciunul, nu există niciun grup, deci nu iese niciun rând. E altfel decât `COUNT(*)` fără grupare, care dă întotdeauna un rând."
+              }
+            ]
+          },
+          "briefing": [
+            {
+              "titlu": "`GROUP BY` sparge tabelul în grămezi",
+              "text": "`COUNT(*)` singur dă un număr pentru tot tabelul. Cu `GROUP BY departament`, baza face câte o grămadă pentru fiecare departament și socotește în fiecare separat: iese câte un rând de grup.",
+              "cod": "SELECT departament, COUNT(*)\nFROM angajat\nGROUP BY departament\nORDER BY departament;"
+            },
+            {
+              "titlu": "Ce poți cere lângă grup",
+              "text": "Într-o interogare cu `GROUP BY`, fiecare coloană din `SELECT` e ori coloana după care ai grupat, ori o socoteală. `nume` n-are ce căuta acolo: într-o grămadă de trei oameni nu există „numele\" — sunt trei. Baza îți spune asta răspicat, cu o eroare."
+            },
+            {
+              "titlu": "`WHERE` alege rânduri, `HAVING` alege grupuri",
+              "text": "`WHERE` lucrează înainte de grupare, pe rânduri: „doar angajații cu salariul peste 3000\". `HAVING` lucrează după, pe grupuri: „doar departamentele cu mai mult de un om\". Se pot folosi amândouă în aceeași interogare, în ordinea asta.",
+              "cod": "SELECT departament, COUNT(*)\nFROM angajat\nGROUP BY departament\nHAVING COUNT(*) > 1;"
+            }
+          ],
+          "exercitii": [
+            {
+              "cheie": "completeaza-interogarea-trebuie-sa-dea-cati-angajati",
+              "tip": "completeaza",
+              "enunt": "Interogarea trebuie să dea câți angajați are fiecare departament. Completează golul cu instrucțiunea care face grămezile.",
+              "codInitial": "SELECT departament, COUNT(*)\nFROM angajat\n___ BY departament\nORDER BY departament;\n",
+              "solutie": "SELECT departament, COUNT(*)\nFROM angajat\nGROUP BY departament\nORDER BY departament;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei departamente, unul cu doi oameni",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300),('Radu','tehnic',6000);",
+                  "asteptat": "[[\"contabilitate\",1],[\"tehnic\",1],[\"vanzari\",2]]"
+                },
+                {
+                  "apel": "toți în același departament",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"vanzari\",2]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "Instrucțiunea care sparge tabelul în grămezi e `GROUP BY`. Fără ea, `COUNT(*)` ar socoti o singură dată, pentru tot tabelul. Pe un tabel gol nu există niciun grup, deci nu iese niciun rând — nici măcar unul cu zero."
+            },
+            {
+              "cheie": "repara-interogarea-ar-trebui-sa-dea-suma",
+              "tip": "repara",
+              "enunt": "Interogarea ar trebui să dea suma salariilor pe fiecare departament, dar grupează după om. Repară.",
+              "codInitial": "SELECT departament, SUM(salariu)\nFROM angajat\nGROUP BY nume\nORDER BY departament;\n",
+              "solutie": "SELECT departament, SUM(salariu)\nFROM angajat\nGROUP BY departament\nORDER BY departament;\n",
+              "cazuriTest": [
+                {
+                  "apel": "trei departamente, unul cu doi oameni",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300),('Radu','tehnic',6000);",
+                  "asteptat": "[[\"contabilitate\",3100],[\"tehnic\",6000],[\"vanzari\",9500]]"
+                },
+                {
+                  "apel": "toți în același departament",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Maria','vanzari',4300);",
+                  "asteptat": "[[\"vanzari\",9500]]"
+                },
+                {
+                  "apel": "tabel gol",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "Grupată după `nume`, fiecare om ajunge în grămada lui, iar baza nu mai știe ce `departament` să pună pe rând — și se oprește cu o eroare. Se grupează după coloana care apare în `SELECT` lângă socoteală: `departament`."
+            },
+            {
+              "cheie": "scrie-scrie-o-interogare-care-intoarce-doar",
+              "tip": "scrie",
+              "enunt": "Scrie o interogare care întoarce doar departamentele cu mai mult de un angajat, cu numărul lor, ordonate alfabetic. Codul dat le aduce pe toate.",
+              "codInitial": "SELECT departament, COUNT(*)\nFROM angajat\nGROUP BY departament\nORDER BY departament;\n",
+              "solutie": "SELECT departament, COUNT(*)\nFROM angajat\nGROUP BY departament\nHAVING COUNT(*) > 1\nORDER BY departament;\n",
+              "cazuriTest": [
+                {
+                  "apel": "un singur departament cu doi oameni",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100),('Maria','vanzari',4300),('Radu','tehnic',6000);",
+                  "asteptat": "[[\"vanzari\",2]]"
+                },
+                {
+                  "apel": "fiecare singur în departamentul lui",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ion','contabilitate',3100),('Radu','tehnic',6000);",
+                  "asteptat": "[]"
+                },
+                {
+                  "apel": "două departamente, câte doi în fiecare",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Maria','vanzari',4300),('Radu','tehnic',6000),('Sorin','tehnic',2500);",
+                  "asteptat": "[[\"tehnic\",2],[\"vanzari\",2]]"
+                }
+              ],
+              "explicatiePredefinita": "Filtrul e pe grupuri, nu pe rânduri, deci nu merge cu `WHERE`: când se evaluează `WHERE`, grămezile încă nu există. Se pune `HAVING COUNT(*) > 1` după `GROUP BY`."
+            }
+          ]
+        },
+        {
+          "cheie": "doua-tabele-deodata",
+          "nume": "Două tabele deodată",
+          "test": {
+            "cheie": "test-doua-tabele-deodata",
+            "titlu": "Test: Două tabele deodată",
+            "intrebari": [
+              {
+                "cheie": "join-pierde-randuri",
+                "intrebare": "Un angajat are un departament care nu se găsește în tabelul `departament`. Ce face un `JOIN` obișnuit cu el?",
+                "variante": [
+                  "Îl scoate din rezultat, fără să spună nimic",
+                  "Îl lasă, cu orașul gol",
+                  "Dă eroare"
+                ],
+                "corect": 0,
+                "explicatie": "`JOIN` ține doar perechile întregi. Rândul fără pereche dispare tăcut, iar asta e felul în care se pierd date fără să bage nimeni de seamă: numeri angajații după un `JOIN` și îți ies mai puțini decât sunt."
+              },
+              {
+                "cheie": "left-join",
+                "intrebare": "Ce face `LEFT JOIN` în plus?",
+                "variante": [
+                  "Sortează rezultatul după tabelul din stânga",
+                  "Păstrează toate rândurile din stânga, punând `NULL` unde n-a găsit pereche",
+                  "Leagă tabelele în ordine inversă"
+                ],
+                "corect": 1,
+                "explicatie": "Tot ce e în tabelul din stânga rămâne în rezultat. Acolo unde nu s-a găsit pereche, coloanele din dreapta vin goale — `NULL`. De-aia după un `LEFT JOIN` apar `NULL`-uri care înainte nu existau."
+              },
+              {
+                "cheie": "is-null",
+                "intrebare": "De ce `WHERE d.nume = NULL` nu întoarce niciodată nimic?",
+                "variante": [
+                  "Fiindcă `NULL` nu e egal cu nimic, nici măcar cu el însuși",
+                  "Fiindcă lipsește o paranteză",
+                  "Fiindcă `NULL` se scrie cu litere mici"
+                ],
+                "corect": 0,
+                "explicatie": "`NULL` înseamnă „nu se știe\". Întrebarea „nu se știe este egal cu nu se știe?\" n-are răspuns — nu e nici adevărat, nici fals — iar `WHERE` lasă să treacă doar ce e adevărat. Lipsa se întreabă cu `IS NULL`."
+              }
+            ]
+          },
+          "briefing": [
+            {
+              "titlu": "Datele stau împărțite pe tabele",
+              "text": "Orașul unui departament n-are ce căuta scris de patru ori, lângă fiecare angajat. Stă o dată, în tabelul `departament`, iar `angajat` ține doar numele departamentului. `JOIN` le pune la loc împreună, pe durata unei întrebări.",
+              "cod": "SELECT a.nume, d.oras\nFROM angajat a\nJOIN departament d ON a.departament = d.nume;"
+            },
+            {
+              "titlu": "`ON` spune pe unde se leagă",
+              "text": "`a` și `d` sunt porecle date tabelelor, ca să se scrie mai scurt. `ON` spune care coloană din stânga se potrivește cu care din dreapta. Fără `ON`, baza ar împerechea fiecare rând cu fiecare."
+            },
+            {
+              "titlu": "Un `JOIN` obișnuit pierde rândurile fără pereche",
+              "text": "Dacă un angajat are un departament care nu există în celălalt tabel, `JOIN` îl aruncă din rezultat, tăcut. `LEFT JOIN` îl păstrează, dar coloanele din dreapta rămân goale — `NULL`.\n\nȘi aici e capcana: `NULL` nu se compară cu `=`. `WHERE d.nume = NULL` nu e nici adevărat, nici fals, deci nu întoarce nimic, niciodată. Se scrie `IS NULL`.",
+              "cod": "SELECT a.nume, d.oras\nFROM angajat a\nLEFT JOIN departament d ON a.departament = d.nume\nWHERE d.nume IS NULL;"
+            }
+          ],
+          "exercitii": [
+            {
+              "cheie": "completeaza-interogarea-trebuie-sa-dea-numele-fiecarui",
+              "tip": "completeaza",
+              "enunt": "Interogarea trebuie să dea numele fiecărui angajat și orașul departamentului lui. Completează golul cu coloana pe care se face legătura.",
+              "codInitial": "SELECT a.nume, d.oras\nFROM angajat a\nJOIN departament d ON a.departament = d.___\nORDER BY a.nume;\n",
+              "solutie": "SELECT a.nume, d.oras\nFROM angajat a\nJOIN departament d ON a.departament = d.nume\nORDER BY a.nume;\n",
+              "cazuriTest": [
+                {
+                  "apel": "doi angajați, amândoi cu departament știut",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100);\nINSERT INTO departament VALUES ('vanzari','Cluj'),('contabilitate','Iasi');",
+                  "asteptat": "[[\"Ana\",\"Cluj\"],[\"Ion\",\"Iasi\"]]"
+                },
+                {
+                  "apel": "un angajat cu departament necunoscut",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Sorin','depozit',2500);\nINSERT INTO departament VALUES ('vanzari','Cluj');",
+                  "asteptat": "[]"
+                },
+                {
+                  "apel": "amândouă tabelele goale",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);",
+                  "asteptat": "[]"
+                }
+              ],
+              "explicatiePredefinita": "Legătura se face între `angajat.departament` și numele departamentului din celălalt tabel, adică `departament.nume`. Al doilea caz arată ce face un `JOIN` obișnuit cu cine n-are pereche: îl scoate din rezultat."
+            },
+            {
+              "cheie": "repara-toti-angajatii-trebuie-sa-apara-chiar",
+              "tip": "repara",
+              "enunt": "Toți angajații trebuie să apară, chiar dacă departamentul lor nu se găsește în celălalt tabel — cu orașul gol, atunci. Acum unii dispar. Repară.",
+              "codInitial": "SELECT a.nume, d.oras\nFROM angajat a\nJOIN departament d ON a.departament = d.nume\nORDER BY a.nume;\n",
+              "solutie": "SELECT a.nume, d.oras\nFROM angajat a\nLEFT JOIN departament d ON a.departament = d.nume\nORDER BY a.nume;\n",
+              "cazuriTest": [
+                {
+                  "apel": "unul cu departament știut, unul fără",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Sorin','depozit',2500);\nINSERT INTO departament VALUES ('vanzari','Cluj');",
+                  "asteptat": "[[\"Ana\",\"Cluj\"],[\"Sorin\",null]]"
+                },
+                {
+                  "apel": "toți cu departament știut",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100);\nINSERT INTO departament VALUES ('vanzari','Cluj'),('contabilitate','Iasi');",
+                  "asteptat": "[[\"Ana\",\"Cluj\"],[\"Ion\",\"Iasi\"]]"
+                },
+                {
+                  "apel": "niciun departament în tabel",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200);",
+                  "asteptat": "[[\"Ana\",null]]"
+                }
+              ],
+              "explicatiePredefinita": "`JOIN` ține doar perechile întregi. `LEFT JOIN` păstrează tot ce e în tabelul din stânga — angajații — și pune `NULL` în coloanele din dreapta acolo unde n-a găsit pereche."
+            },
+            {
+              "cheie": "scrie-scrie-o-interogare-care-intoarce-numele",
+              "tip": "scrie",
+              "enunt": "Scrie o interogare care întoarce numele angajaților al căror departament nu se găsește în tabelul `departament`, în ordine alfabetică. Codul dat pare corect, dar nu întoarce nimic niciodată.",
+              "codInitial": "SELECT a.nume\nFROM angajat a\nLEFT JOIN departament d ON a.departament = d.nume\nWHERE d.nume = NULL\nORDER BY a.nume;\n",
+              "solutie": "SELECT a.nume\nFROM angajat a\nLEFT JOIN departament d ON a.departament = d.nume\nWHERE d.nume IS NULL\nORDER BY a.nume;\n",
+              "cazuriTest": [
+                {
+                  "apel": "doi angajați rămași pe dinafară",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Sorin','depozit',2500),('Radu','logistica',3000);\nINSERT INTO departament VALUES ('vanzari','Cluj');",
+                  "asteptat": "[[\"Radu\"],[\"Sorin\"]]"
+                },
+                {
+                  "apel": "toți au departamentul în tabel",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100);\nINSERT INTO departament VALUES ('vanzari','Cluj'),('contabilitate','Iasi');",
+                  "asteptat": "[]"
+                },
+                {
+                  "apel": "niciun departament în tabel",
+                  "pregatire": "CREATE TABLE angajat (nume text, departament text, salariu int);\nCREATE TABLE departament (nume text, oras text);\nINSERT INTO angajat VALUES ('Ana','vanzari',5200),('Ion','contabilitate',3100);",
+                  "asteptat": "[[\"Ana\"],[\"Ion\"]]"
+                }
+              ],
+              "explicatiePredefinita": "`= NULL` nu e niciodată adevărat, nici măcar când valoarea chiar lipsește: `NULL` înseamnă „nu se știe\", iar „nu se știe = nu se știe\" rămâne tot „nu se știe\". Lipsa se întreabă cu `IS NULL`."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -15,10 +15,19 @@
  * iar o unealtă greșește tăcut. Mai bine cade la încărcare, cu un mesaj care
  * spune unde, decât să ajungă în bază un exercițiu fără cazuri de test.
  */
-import type { CazTest } from "@/lib/exercitii/motor";
+import type { CazTest, Limbaj } from "@/lib/exercitii/motor";
 
 export const FORMAT = "tutore-curs";
 export const VERSIUNE = 1;
+
+export const LIMBAJE = ["python", "sql"] as const;
+
+/**
+ * Limbajul e al cursului întreg, nu al exercițiului: un capitol de SQL nu are
+ * exerciții de Python în el. Lipsa lui înseamnă Python — așa erau scrise
+ * fișierele înainte să existe al doilea motor, și n-are rost să se rescrie.
+ */
+export const LIMBAJ_IMPLICIT: Limbaj = "python";
 
 export type EcranBriefing = { titlu: string; text: string; cod?: string };
 
@@ -39,17 +48,44 @@ export type ExercitiuLivrat = {
   explicatiePredefinita: string;
 };
 
+/**
+ * O întrebare de test: enunț, variante, una corectă, și explicația care se
+ * arată după răspuns — și când ai nimerit, și când n-ai nimerit.
+ *
+ * Variante, nu cod scris: partea de scris cod o fac exercițiile. Testul
+ * întreabă dacă ai înțeles **de ce**, iar răspunsul se compară mecanic, fără
+ * niciun model (principiul 1), deci merge și pe un laptop gol (principiul 5).
+ */
+export type IntrebareTest = {
+  cheie: string;
+  intrebare: string;
+  variante: string[];
+  /** Indicele variantei corecte în `variante`. */
+  corect: number;
+  explicatie: string;
+};
+
+export type TestLivrat = {
+  cheie: string;
+  titlu: string;
+  intrebari: IntrebareTest[];
+};
+
 export type NivelLivrat = {
   cheie: string;
   nume: string;
   briefing: EcranBriefing[];
   exercitii: ExercitiuLivrat[];
+  /** Testul de la capătul lecției. Se poate sări (`PLAN.md` §5). */
+  test?: TestLivrat;
 };
 
 export type CapitolLivrat = {
   cheie: string;
   nume: string;
   niveluri: NivelLivrat[];
+  /** Testul de la capătul capitolului, peste tot ce s-a învățat în el. */
+  test?: TestLivrat;
 };
 
 export type CursLivrat = {
@@ -57,6 +93,8 @@ export type CursLivrat = {
   versiune: number;
   /** Numele propriu al cursului, cel de pe ecran: „Python". */
   materie: string;
+  /** Pe ce motor se rulează exercițiile cursului. */
+  limbaj: Limbaj;
   capitole: CapitolLivrat[];
 };
 
@@ -117,13 +155,36 @@ function unice(chei: string[], unde: string) {
   }
 }
 
-function citesteCaz(v: unknown, unde: string): CazTest {
+/**
+ * Un caz, în funcție de limbaj.
+ *
+ * La Python, `apel` e expresia care se evaluează. La SQL nu se evaluează
+ * nimic scris de noi: `apel` e eticheta cazului, cea din raport, iar datele
+ * vin din `pregatire`. Câmpurile de SQL într-un curs de Python se resping —
+ * n-ar fi rulate niciodată, deci ar fi o promisiune mincinoasă în fișier.
+ */
+function citesteCaz(v: unknown, unde: string, limbaj: Limbaj): CazTest {
   const o = obiect(v, unde);
-  return {
+  const caz: CazTest = {
     apel: sir(o.apel, `${unde}.apel`),
     // `asteptat` poate fi text gol: o funcție care întoarce `""` e un caz bun.
     asteptat: sir(o.asteptat, `${unde}.asteptat`, { gol: true }),
   };
+
+  if (limbaj === "sql") {
+    caz.pregatire = sir(o.pregatire, `${unde}.pregatire`);
+    if (o.verificare !== undefined) {
+      caz.verificare = sir(o.verificare, `${unde}.verificare`);
+    }
+    return caz;
+  }
+
+  for (const nume of ["pregatire", "verificare"]) {
+    if (o[nume] !== undefined) {
+      throw new EroareFormat(`${unde}.${nume}`, "e numai pentru cursurile de SQL");
+    }
+  }
+  return caz;
 }
 
 function citesteEcran(v: unknown, unde: string): EcranBriefing {
@@ -135,7 +196,11 @@ function citesteEcran(v: unknown, unde: string): EcranBriefing {
   };
 }
 
-function citesteExercitiu(v: unknown, unde: string): ExercitiuLivrat {
+function citesteExercitiu(
+  v: unknown,
+  unde: string,
+  limbaj: Limbaj,
+): ExercitiuLivrat {
   const o = obiect(v, unde);
   const tip = sir(o.tip, `${unde}.tip`);
   if (!(TIPURI_EXERCITIU as readonly string[]).includes(tip)) {
@@ -145,7 +210,7 @@ function citesteExercitiu(v: unknown, unde: string): ExercitiuLivrat {
     );
   }
   const cazuri = lista(o.cazuriTest, `${unde}.cazuriTest`).map((c, i) =>
-    citesteCaz(c, `${unde}.cazuriTest[${i}]`),
+    citesteCaz(c, `${unde}.cazuriTest[${i}]`, limbaj),
   );
   return {
     cheie: cheie(o.cheie, `${unde}.cheie`),
@@ -162,10 +227,55 @@ function citesteExercitiu(v: unknown, unde: string): ExercitiuLivrat {
   };
 }
 
-function citesteNivel(v: unknown, unde: string): NivelLivrat {
+function citesteIntrebare(v: unknown, unde: string): IntrebareTest {
+  const o = obiect(v, unde);
+  const variante = lista(o.variante, `${unde}.variante`, 2).map((t, i) =>
+    sir(t, `${unde}.variante[${i}]`),
+  );
+
+  const corect = o.corect;
+  if (
+    typeof corect !== "number" ||
+    !Number.isInteger(corect) ||
+    corect < 0 ||
+    corect >= variante.length
+  ) {
+    throw new EroareFormat(
+      `${unde}.corect`,
+      `aștept numărul variantei corecte, de la 0 la ${variante.length - 1}`,
+    );
+  }
+
+  return {
+    cheie: cheie(o.cheie, `${unde}.cheie`),
+    intrebare: sir(o.intrebare, `${unde}.intrebare`),
+    variante,
+    corect,
+    // Se arată și la răspunsul bun: testul e tot o ocazie de învățat, nu o notă.
+    explicatie: sir(o.explicatie, `${unde}.explicatie`),
+  };
+}
+
+function citesteTest(v: unknown, unde: string): TestLivrat {
+  const o = obiect(v, unde);
+  const intrebari = lista(o.intrebari, `${unde}.intrebari`).map((i, k) =>
+    citesteIntrebare(i, `${unde}.intrebari[${k}]`),
+  );
+  unice(
+    intrebari.map((i) => i.cheie),
+    `${unde}.intrebari`,
+  );
+  return {
+    cheie: cheie(o.cheie, `${unde}.cheie`),
+    titlu: sir(o.titlu, `${unde}.titlu`),
+    intrebari,
+  };
+}
+
+function citesteNivel(v: unknown, unde: string, limbaj: Limbaj): NivelLivrat {
   const o = obiect(v, unde);
   const exercitii = lista(o.exercitii, `${unde}.exercitii`).map((e, i) =>
-    citesteExercitiu(e, `${unde}.exercitii[${i}]`),
+    citesteExercitiu(e, `${unde}.exercitii[${i}]`, limbaj),
   );
   unice(
     exercitii.map((e) => e.cheie),
@@ -178,13 +288,20 @@ function citesteNivel(v: unknown, unde: string): NivelLivrat {
       citesteEcran(e, `${unde}.briefing[${i}]`),
     ),
     exercitii,
+    ...(o.test === undefined
+      ? {}
+      : { test: citesteTest(o.test, `${unde}.test`) }),
   };
 }
 
-function citesteCapitol(v: unknown, unde: string): CapitolLivrat {
+function citesteCapitol(
+  v: unknown,
+  unde: string,
+  limbaj: Limbaj,
+): CapitolLivrat {
   const o = obiect(v, unde);
   const niveluri = lista(o.niveluri, `${unde}.niveluri`).map((n, i) =>
-    citesteNivel(n, `${unde}.niveluri[${i}]`),
+    citesteNivel(n, `${unde}.niveluri[${i}]`, limbaj),
   );
   unice(
     niveluri.map((n) => n.cheie),
@@ -194,6 +311,9 @@ function citesteCapitol(v: unknown, unde: string): CapitolLivrat {
     cheie: cheie(o.cheie, `${unde}.cheie`),
     nume: sir(o.nume, `${unde}.nume`),
     niveluri,
+    ...(o.test === undefined
+      ? {}
+      : { test: citesteTest(o.test, `${unde}.test`) }),
   };
 }
 
@@ -214,8 +334,16 @@ export function citesteCurs(v: unknown): CursLivrat {
     );
   }
 
+  const limbaj = o.limbaj === undefined ? LIMBAJ_IMPLICIT : o.limbaj;
+  if (!(LIMBAJE as readonly unknown[]).includes(limbaj)) {
+    throw new EroareFormat(
+      "cursul.limbaj",
+      `„${String(limbaj)}" nu e un motor cunoscut (${LIMBAJE.join(", ")})`,
+    );
+  }
+
   const capitole = lista(o.capitole, "cursul.capitole").map((c, i) =>
-    citesteCapitol(c, `cursul.capitole[${i}]`),
+    citesteCapitol(c, `cursul.capitole[${i}]`, limbaj as Limbaj),
   );
   unice(
     capitole.map((c) => c.cheie),
@@ -226,6 +354,7 @@ export function citesteCurs(v: unknown): CursLivrat {
     format: FORMAT,
     versiune: VERSIUNE,
     materie: sir(o.materie, "cursul.materie"),
+    limbaj: limbaj as Limbaj,
     capitole,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Ecran,
@@ -17,24 +18,47 @@ import {
   type Harta,
   type NivelHarta,
 } from "@/lib/date/progres";
+import { cheieCursului, cu } from "@/lib/continut/livrate";
+import { REZUMATE } from "@/lib/continut/rezumat";
 
 type Stare =
   | { fel: "se-incarca" }
   | { fel: "gata"; harta: Harta }
   | { fel: "eroare"; mesaj: string };
 
-export default function EcranCurs() {
+export default function Pagina() {
+  return (
+    <Suspense
+      fallback={
+        <Ecran>
+          <AntetEcran titlu="Curs" />
+          <ContinutEcran>
+            <Panou>
+              <p className="text-text-slab">Se deschide cursul.</p>
+            </Panou>
+          </ContinutEcran>
+        </Ecran>
+      }
+    >
+      <EcranCurs />
+    </Suspense>
+  );
+}
+
+function EcranCurs() {
+  // Cursul stă în adresă, ca să se poată da mai departe un link către el.
+  const cheie = cheieCursului(useSearchParams().get("curs"));
   const [stare, setStare] = useState<Stare>({ fel: "se-incarca" });
   const [incarcari, reincarca] = useState(0);
 
   useEffect(() => {
     let anulat = false;
     (async () => {
-      const harta = await hartaCursului();
+      const harta = await hartaCursului(cheie);
       // Bonusul de revenire se dă tăcut (`PLAN.md` §8): se adaugă la total și
       // atât, fără mesaj și fără sărbătoare.
       await bonusDeRevenire(harta.materieId).catch(() => 0);
-      const proaspata = await hartaCursului();
+      const proaspata = await hartaCursului(cheie);
       if (!anulat) setStare({ fel: "gata", harta: proaspata });
     })().catch((e: unknown) => {
       if (!anulat) setStare({ fel: "eroare", mesaj: mesajEroare(e) });
@@ -42,7 +66,7 @@ export default function EcranCurs() {
     return () => {
       anulat = true;
     };
-  }, [incarcari]);
+  }, [incarcari, cheie]);
 
   const urmatoarea =
     stare.fel === "gata"
@@ -86,12 +110,79 @@ export default function EcranCurs() {
                 <ul className="flex flex-col gap-3">
                   {c.niveluri.map((n) => (
                     <li key={n.id}>
-                      <RandLectie nivel={n} />
+                      <RandLectie nivel={n} cheie={cheie} />
                     </li>
                   ))}
                 </ul>
               </Panou>
             ))}
+
+            {stare.harta.capitole.some((c) => c.teste.length > 0) ? (
+              <Panou titlu="Teste">
+                <p className="text-sm text-text-slab">
+                  Se dau când vrei, se reiau de câte ori vrei, și nu blochează
+                  nicio lecție. Fiecare dus până la capăt adaugă XP.
+                </p>
+                <ul className="flex flex-col gap-3">
+                  {stare.harta.capitole.flatMap((c) =>
+                    c.teste.map((t) => (
+                      <li key={t.id}>
+                        <Link
+                          href={cu(
+                            "/test/",
+                            cheie,
+                            t.nivelId === null
+                              ? { capitol: c.id }
+                              : { nivel: t.nivelId },
+                          )}
+                          prefetch={false}
+                          className="flex min-h-11 items-center justify-between gap-4 rounded-tema border border-contur p-4 transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                        >
+                          <span className="flex flex-col gap-1">
+                            <span className="font-medium">{t.titlu}</span>
+                            <span className="text-sm text-text-slab">
+                              {t.dus ? "Dus până la capăt" : "Încă nedat"}
+                            </span>
+                          </span>
+                          <span aria-hidden="true" className="text-text-slab">
+                            →
+                          </span>
+                        </Link>
+                      </li>
+                    )),
+                  )}
+                </ul>
+              </Panou>
+            ) : null}
+
+            <Panou titlu="Celelalte cursuri">
+              <ul className="flex flex-col gap-3">
+                {REZUMATE.filter((r) => r.cheie !== cheie).map((r) => (
+                  <li key={r.cheie}>
+                    <Link
+                      href={cu("/curs/", r.cheie)}
+                      prefetch={false}
+                      className="flex min-h-11 items-center justify-between gap-4 rounded-tema border border-contur p-4 transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      <span className="flex flex-col gap-1">
+                        <span className="font-medium">{r.materie}</span>
+                        <span className="text-sm text-text-slab">
+                          {r.capitol} · {r.lectii} lecții · {r.exercitii}{" "}
+                          exerciții
+                        </span>
+                      </span>
+                      <span aria-hidden="true" className="text-text-slab">
+                        →
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm text-text-slab">
+                Fiecare curs își ține XP-ul și lecțiile lui. Ce ai făcut aici
+                rămâne aici.
+              </p>
+            </Panou>
 
             <Panou titlu="XP">
               <p className="text-text-slab">
@@ -107,13 +198,13 @@ export default function EcranCurs() {
       <BaraActiuni>
         {urmatoarea ? (
           <ButonLegatura
-            href={`/lectie/?nivel=${urmatoarea.id}`}
+            href={cu("/lectie/", cheie, { nivel: urmatoarea.id })}
             prefetch={false}
           >
             Continuă: {urmatoarea.nume}
           </ButonLegatura>
         ) : null}
-        <ButonLegatura href="/progres/" fel="secundar">
+        <ButonLegatura href={cu("/progres/", cheie)} fel="secundar">
           Progres
         </ButonLegatura>
         <ButonLegatura href="/python/" fel="secundar">
@@ -133,7 +224,13 @@ const ETICHETE = {
   blocat: "Se deschide mai încolo",
 } as const;
 
-function RandLectie({ nivel }: { nivel: NivelHarta }) {
+function RandLectie({
+  nivel,
+  cheie,
+}: {
+  nivel: NivelHarta;
+  cheie: ReturnType<typeof cheieCursului>;
+}) {
   const blocat = nivel.stare === "blocat";
 
   const continut = (
@@ -168,7 +265,7 @@ function RandLectie({ nivel }: { nivel: NivelHarta }) {
 
   return (
     <Link
-      href={`/lectie/?nivel=${nivel.id}`}
+      href={cu("/lectie/", cheie, { nivel: nivel.id })}
       // Exportul static n-are o bucată pregătită pentru adresa cu parametru,
       // iar preîncărcarea ar cere una inexistentă și ar umple consola cu 404.
       prefetch={false}

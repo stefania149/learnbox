@@ -11,7 +11,8 @@ import {
   TitluCrt,
   type ElementMeniu,
 } from "@/componente/terminal";
-import { REZUMAT } from "@/lib/continut/rezumat";
+import { REZUMATE } from "@/lib/continut/rezumat";
+import { cu } from "@/lib/continut/livrate";
 
 /**
  * Coperta: primul ecran, desenat ca un calculator de acum patruzeci de ani.
@@ -21,8 +22,9 @@ import { REZUMAT } from "@/lib/continut/rezumat";
  * ~30 MB de WebAssembly se descarcă abia când intri în curs.
  */
 
-const LECTII = REZUMAT.lectii;
-const EXERCITII = REZUMAT.exercitii;
+const MOTOARE = [...new Set(REZUMATE.map((r) => r.limbaj))]
+  .map((l) => (l === "sql" ? "Postgres" : "Python"))
+  .join(" · ");
 
 const MENIU: ElementMeniu[] = [
   { href: "/", eticheta: "Acasă", icoana: "monitor", activ: true },
@@ -58,7 +60,7 @@ export default function Acasa() {
         <RandStare nume="Server" valoare="niciunul" />
         <RandStare nume="Cont" valoare="niciunul" />
         <RandStare nume="Date" valoare="în browser" />
-        <RandStare nume="Motor" valoare="Python" />
+        <RandStare nume="Motoare" valoare={MOTOARE} />
         <Prompt text="GATA." />
       </CutieRetro>
 
@@ -74,12 +76,14 @@ export default function Acasa() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <CampCrt eticheta="Curs" valoare={REZUMAT.materie} />
-            <CampCrt
-              eticheta="Capitolul 1"
-              valoare={REZUMAT.capitol}
-              detaliu={`${LECTII} lecții · ${EXERCITII} exerciții · lecțiile se deschid pe rând`}
-            />
+            {REZUMATE.map((r) => (
+              <CampCrt
+                key={r.cheie}
+                eticheta={`Curs · ${r.materie}`}
+                valoare={r.capitol}
+                detaliu={`${r.lectii} lecții · ${r.exercitii} exerciții · lecțiile se deschid pe rând`}
+              />
+            ))}
             <CampCrt
               eticheta="Progresul tău"
               valoare="Rămâne pe calculatorul tău"
@@ -88,9 +92,15 @@ export default function Acasa() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <LegaturaCrt href="/curs/" className="w-full">
-              Intră în curs <span aria-hidden>→</span>
-            </LegaturaCrt>
+            {REZUMATE.map((r) => (
+              <LegaturaCrt
+                key={r.cheie}
+                href={cu("/curs/", r.cheie)}
+                className="w-full"
+              >
+                Intră în {r.materie} <span aria-hidden>→</span>
+              </LegaturaCrt>
+            ))}
 
             <div
               aria-hidden
@@ -137,8 +147,8 @@ export default function Acasa() {
 
         <CutieRetro titlu="Totul local">
           <p className="text-sm text-retro-eticheta">
-            Python rulează în browser, iar progresul stă într-o bază de date din
-            browser. Nimic nu pleacă spre altcineva.
+            Python și Postgres rulează amândouă în browser, iar progresul stă
+            într-o bază de date tot din browser. Nimic nu pleacă spre altcineva.
           </p>
         </CutieRetro>
       </aside>

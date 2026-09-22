@@ -19,6 +19,8 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 import { python } from "@codemirror/lang-python";
+import { PostgreSQL, sql } from "@codemirror/lang-sql";
+import type { Limbaj } from "@/lib/exercitii/motor";
 import { tags } from "@lezer/highlight";
 
 /**
@@ -40,7 +42,7 @@ const culori = HighlightStyle.define([
 
 const infatisare = EditorView.theme({
   "&": {
-    backgroundColor: "var(--tema-fundal)",
+    backgroundColor: "var(--tema-sticla)",
     color: "var(--tema-text)",
     fontSize: "0.875rem",
   },
@@ -51,7 +53,7 @@ const infatisare = EditorView.theme({
     caretColor: "var(--tema-text)",
   },
   ".cm-gutters": {
-    backgroundColor: "var(--tema-fundal)",
+    backgroundColor: "var(--tema-sticla)",
     color: "var(--tema-text-slab)",
     border: "none",
     fontFamily: "var(--tema-font-mono)",
@@ -69,23 +71,33 @@ const infatisare = EditorView.theme({
   ".cm-scroller": { lineHeight: "1.6" },
 });
 
+/** Colorarea sintaxei, după motorul pe care rulează exercițiul. */
+function dupaLimbaj(limbaj: Limbaj) {
+  return limbaj === "sql"
+    ? sql({ dialect: PostgreSQL, upperCaseKeywords: true })
+    : python();
+}
+
 export function EditorCod({
   eticheta,
   ajutor,
   valoare,
   onSchimba,
+  limbaj = "python",
   dezactivat = false,
 }: {
   eticheta: string;
   ajutor?: string;
   valoare: string;
   onSchimba: (cod: string) => void;
+  limbaj?: Limbaj;
   dezactivat?: boolean;
 }) {
   const gazda = useRef<HTMLDivElement>(null);
   const vedere = useRef<EditorView | null>(null);
   const scrie = useRef(onSchimba);
   const editabil = useRef(new Compartment());
+  const limba = useRef(new Compartment());
   const idEticheta = useId();
 
   // Editorul se construiește o dată; ca să nu-l refacem la fiecare tastă,
@@ -110,7 +122,7 @@ export function EditorCod({
           indentOnInput(),
           bracketMatching(),
           indentUnit.of("    "),
-          python(),
+          limba.current.of(dupaLimbaj(limbaj)),
           syntaxHighlighting(culori),
           keymap.of([...defaultKeymap, ...historyKeymap]),
           infatisare,
@@ -150,6 +162,14 @@ export function EditorCod({
     });
   }, [dezactivat]);
 
+  // Aceeași fereastră de editor slujește și un capitol de Python, și unul de
+  // SQL: la trecerea dintr-unul în altul se schimbă doar colorarea.
+  useEffect(() => {
+    vedere.current?.dispatch({
+      effects: limba.current.reconfigure(dupaLimbaj(limbaj)),
+    });
+  }, [limbaj]);
+
   return (
     <div className="flex flex-col gap-2">
       <span id={idEticheta} className="text-sm font-medium">
@@ -157,7 +177,7 @@ export function EditorCod({
       </span>
       <div
         ref={gazda}
-        className={`min-h-48 overflow-hidden rounded-tema border border-contur bg-fundal focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${
+        className={`min-h-48 overflow-hidden rounded-tema border border-contur bg-sticla focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${
           dezactivat ? "opacity-70" : ""
         }`}
       />

@@ -13,7 +13,18 @@ import { Buton, ButonLegatura } from "@/componente/buton";
 import { EditorCod } from "@/componente/editor-cod";
 import { RaportCazuri, type StareRaport } from "@/componente/raport-cazuri";
 import { mesajEroare } from "@/lib/date/erori";
-import { briefingul, cazurile, type EcranBriefing } from "@/lib/date/seminte";
+import { testulLectiei } from "@/lib/date/teste";
+import {
+  cheieCursului,
+  cu,
+  type CheieCurs,
+} from "@/lib/continut/livrate";
+import {
+  briefingul,
+  cazurile,
+  limbajul,
+  type EcranBriefing,
+} from "@/lib/date/seminte";
 import {
   citesteLectie,
   hartaCursului,
@@ -63,6 +74,7 @@ export default function Pagina() {
 function EcranLectie() {
   const parametri = useSearchParams();
   const nivelId = Number(parametri.get("nivel"));
+  const cheie = cheieCursului(parametri.get("curs"));
   // Verificat la randare, nu în efect: un `setState` sincron într-un efect
   // pornește randări în lanț, iar aici n-avem ce sincroniza.
   const idValid = Number.isInteger(nivelId) && nivelId > 0;
@@ -73,13 +85,14 @@ function EcranLectie() {
   const [rulare, setRulare] = useState<StareRaport>({ fel: "nepornita" });
   const [incercate, setIncercate] = useState<Set<number>>(new Set());
   const [urmatoarea, setUrmatoarea] = useState<{ id: number; nume: string } | null>(null);
+  const [areTest, setAreTest] = useState(false);
   const [xpBriefing, setXpBriefing] = useState(0);
 
   useEffect(() => {
     let anulat = false;
     if (!idValid) return;
     (async () => {
-      const lectie = await citesteLectie(nivelId);
+      const lectie = await citesteLectie(nivelId, cheie);
       if (anulat) return;
       if (!lectie) {
         setIncarcare({ fel: "lipsa" });
@@ -105,9 +118,9 @@ function EcranLectie() {
     return () => {
       anulat = true;
     };
-  }, [nivelId, idValid]);
+  }, [nivelId, idValid, cheie]);
 
-  if (!idValid) return <LectieLipsa />;
+  if (!idValid) return <LectieLipsa cheie={cheie} />;
 
   if (incarcare.fel === "se-incarca") {
     return (
@@ -122,7 +135,7 @@ function EcranLectie() {
     );
   }
 
-  if (incarcare.fel === "lipsa") return <LectieLipsa />;
+  if (incarcare.fel === "lipsa") return <LectieLipsa cheie={cheie} />;
 
   if (incarcare.fel === "eroare") {
     return (
@@ -139,7 +152,7 @@ function EcranLectie() {
           </Panou>
         </ContinutEcran>
         <BaraActiuni>
-          <ButonLegatura href="/curs/">Înapoi la curs</ButonLegatura>
+          <ButonLegatura href={cu("/curs/", cheie)}>Înapoi la curs</ButonLegatura>
         </BaraActiuni>
       </Ecran>
     );
@@ -164,8 +177,11 @@ function EcranLectie() {
     const cod = coduri[ex.id] ?? "";
 
     setRulare({ fel: "ruleaza", cazuri: [] });
-    const raport = await evalueaza(cod, cazurile(ex), (cazuri) =>
-      setRulare({ fel: "ruleaza", cazuri }),
+    const raport = await evalueaza(
+      limbajul(ex),
+      cod,
+      cazurile(ex),
+      (cazuri) => setRulare({ fel: "ruleaza", cazuri }),
     );
 
     try {
@@ -206,11 +222,12 @@ function EcranLectie() {
   async function terminaLectia() {
     mergiLa({ fel: "gata" });
     try {
-      const harta = await hartaCursului();
+      const harta = await hartaCursului(cheie);
       const deschisa = harta.capitole
         .flatMap((c) => c.niveluri)
         .find((n) => n.stare === "deschis" && n.id !== lectie.nivel.id);
       setUrmatoarea(deschisa ? { id: deschisa.id, nume: deschisa.nume } : null);
+      setAreTest((await testulLectiei(lectie.nivel.id, cheie)) !== null);
     } catch {
       setUrmatoarea(null);
     }
@@ -248,7 +265,7 @@ function EcranLectie() {
               Ecranul dinainte
             </Buton>
           ) : null}
-          <ButonLegatura href="/curs/" fel="secundar">
+          <ButonLegatura href={cu("/curs/", cheie)} fel="secundar">
             Înapoi la curs
           </ButonLegatura>
         </BaraActiuni>
@@ -275,6 +292,7 @@ function EcranLectie() {
           <Panou>
             <EditorCod
               eticheta="Codul tău"
+              limbaj={limbajul(ex)}
               valoare={coduri[ex.id] ?? ""}
               onSchimba={(cod) =>
                 setCoduri((v) => ({ ...v, [ex.id]: cod }))
@@ -288,6 +306,7 @@ function EcranLectie() {
             <RaportCazuri
               stare={rulare}
               cazuri={cazurile(ex)}
+              limbaj={limbajul(ex)}
               explicatie={ex.explicatiePredefinita}
             />
           </Panou>
@@ -353,7 +372,7 @@ function EcranLectie() {
             </Buton>
           )}
 
-          <ButonLegatura href="/curs/" fel="secundar">
+          <ButonLegatura href={cu("/curs/", cheie)} fel="secundar">
             Înapoi la curs
           </ButonLegatura>
         </BaraActiuni>
@@ -390,18 +409,27 @@ function EcranLectie() {
       </ContinutEcran>
 
       <BaraActiuni>
+        {areTest ? (
+          <ButonLegatura
+            href={cu("/test/", cheie, { nivel: lectie.nivel.id })}
+            prefetch={false}
+          >
+            Dă testul lecției
+          </ButonLegatura>
+        ) : null}
         {urmatoarea ? (
           <ButonLegatura
-            href={`/lectie/?nivel=${urmatoarea.id}`}
+            href={cu("/lectie/", cheie, { nivel: urmatoarea.id })}
             prefetch={false}
+            fel={areTest ? "secundar" : "principal"}
           >
             Lecția următoare: {urmatoarea.nume}
           </ButonLegatura>
         ) : null}
-        <ButonLegatura href="/curs/" fel="secundar">
+        <ButonLegatura href={cu("/curs/", cheie)} fel="secundar">
           Înapoi la curs
         </ButonLegatura>
-        <ButonLegatura href="/progres/" fel="secundar">
+        <ButonLegatura href={cu("/progres/", cheie)} fel="secundar">
           Vezi progresul
         </ButonLegatura>
         <Buton
@@ -415,7 +443,7 @@ function EcranLectie() {
   );
 }
 
-function LectieLipsa() {
+function LectieLipsa({ cheie }: { cheie: CheieCurs }) {
   return (
     <Ecran>
       <AntetEcran
@@ -430,7 +458,7 @@ function LectieLipsa() {
         </Panou>
       </ContinutEcran>
       <BaraActiuni>
-        <ButonLegatura href="/curs/">Înapoi la curs</ButonLegatura>
+        <ButonLegatura href={cu("/curs/", cheie)}>Înapoi la curs</ButonLegatura>
       </BaraActiuni>
     </Ecran>
   );

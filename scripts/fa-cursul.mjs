@@ -25,12 +25,34 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { citesteCurs, EroareFormat, FORMAT, VERSIUNE } from "../lib/continut/format.ts";
+import {
+  citesteCurs,
+  EroareFormat,
+  FORMAT,
+  LIMBAJ_IMPLICIT,
+  LIMBAJE,
+  VERSIUNE,
+} from "../lib/continut/format.ts";
 
 const radacina = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SURSE = join(radacina, "cursuri-sursa");
 const LIVRATE = join(radacina, "public", "cursuri");
 const SABLON = join(radacina, "scripts", "curs", "cerere.md");
+
+/**
+ * Motorul se scrie în brief, pe un rând al lui: `Motor: sql`. Fără rândul
+ * ăsta e Python, ca toate briefingurile scrise înainte să existe al doilea.
+ */
+function motorulDinBrief(brief) {
+  const gasit = brief.match(/^Motor:\s*([a-z]+)\s*$/mu);
+  const limbaj = gasit ? gasit[1] : LIMBAJ_IMPLICIT;
+  if (!LIMBAJE.includes(limbaj)) {
+    throw new Oprire(
+      `„${limbaj}" nu e un motor cunoscut (${LIMBAJE.join(", ")})`,
+    );
+  }
+  return limbaj;
+}
 
 /** Câte cuvinte din enunț intră în cheia unui exercițiu. */
 const CUVINTE_IN_CHEIE = 6;
@@ -44,7 +66,7 @@ class Oprire extends Error {}
 function slug(text) {
   return text
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
@@ -84,6 +106,31 @@ function text(v) {
  * poată citi. Ce nu înțelege trece mai departe neatins — validatorul se plânge
  * el, cu locul scris.
  */
+/** Testul unei lecții sau al unui capitol, cu cheile calculate unde lipsesc. */
+function testul(brut, slugTitlu, unde) {
+  if (brut === undefined) return {};
+  if (typeof brut !== "object" || brut === null) {
+    throw new Oprire(`${unde}: testul nu e un obiect`);
+  }
+
+  const chei = unicizatorul();
+  return {
+    test: {
+      cheie: brut.cheie ?? `test-${slugTitlu}`,
+      titlu: text(brut.titlu),
+      intrebari: (brut.intrebari ?? []).map((i, k) => ({
+        cheie:
+          i.cheie ??
+          chei(slug(String(i.intrebare ?? "")), `${unde}, întrebarea ${k + 1}`),
+        intrebare: text(i.intrebare),
+        variante: (i.variante ?? []).map(text),
+        corect: i.corect,
+        explicatie: text(i.explicatie),
+      })),
+    },
+  };
+}
+
 function normalizeaza(brut) {
   if (typeof brut !== "object" || brut === null || Array.isArray(brut)) {
     throw new Oprire("răspunsul nu e un obiect JSON");
@@ -95,19 +142,25 @@ function normalizeaza(brut) {
     format: brut.format ?? FORMAT,
     versiune: brut.versiune ?? VERSIUNE,
     materie: text(brut.materie),
+    limbaj: brut.limbaj ?? LIMBAJ_IMPLICIT,
     capitole: (brut.capitole ?? []).map((cap, i) => {
       const undeCap = `capitolul ${i + 1}`;
       const cheiNiveluri = unicizatorul();
+      const cheieCap =
+        cap.cheie ?? cheiCapitole(slug(String(cap.nume ?? "")), undeCap);
       return {
-        cheie: cap.cheie ?? cheiCapitole(slug(String(cap.nume ?? "")), undeCap),
+        cheie: cheieCap,
         nume: text(cap.nume),
+        ...testul(cap.test, cheieCap, undeCap),
         niveluri: (cap.niveluri ?? []).map((niv, j) => {
           const undeNiv = `${undeCap}, lecția ${j + 1}`;
           const cheiExercitii = unicizatorul();
+          const cheieNiv =
+            niv.cheie ?? cheiNiveluri(slug(String(niv.nume ?? "")), undeNiv);
           return {
-            cheie:
-              niv.cheie ?? cheiNiveluri(slug(String(niv.nume ?? "")), undeNiv),
+            cheie: cheieNiv,
             nume: text(niv.nume),
+            ...testul(niv.test, cheieNiv, undeNiv),
             briefing: (niv.briefing ?? []).map((ec) => ({
               titlu: text(ec.titlu),
               text: text(ec.text),
@@ -126,6 +179,12 @@ function normalizeaza(brut) {
               solutie: cod(ex.solutie ?? ""),
               cazuriTest: (ex.cazuriTest ?? []).map((c) => ({
                 apel: text(c.apel),
+                ...(c.pregatire === undefined
+                  ? {}
+                  : { pregatire: text(c.pregatire) }),
+                ...(c.verificare === undefined
+                  ? {}
+                  : { verificare: text(c.verificare) }),
                 asteptat: text(c.asteptat),
               })),
               explicatiePredefinita: text(ex.explicatiePredefinita),
@@ -145,8 +204,10 @@ function normalizeaza(brut) {
 function plangeri(curs) {
   const gasite = [];
   for (const cap of curs.capitole) {
+    gasite.push(...plangeriTest(cap.test, `${cap.nume} → testul capitolului`));
     for (const niv of cap.niveluri) {
       const undeNiv = `${cap.nume} → ${niv.nume}`;
+      gasite.push(...plangeriTest(niv.test, `${undeNiv} → testul lecției`));
       if (niv.briefing.length === 0) {
         gasite.push(`${undeNiv}: n-are niciun ecran de briefing.`);
       }
@@ -161,10 +222,52 @@ function plangeri(curs) {
         if (ex.tip === "completeaza" && !ex.codInitial.includes("___")) {
           gasite.push(`${unde}: e „completeaza", dar n-are niciun gol „___".`);
         }
+        // La SQL, `asteptat` e o listă de rânduri scrisă ca JSON. Dacă nu e,
+        // niciun caz n-ar avea cum să treacă, oricât de bună ar fi soluția.
+        if (curs.limbaj === "sql") {
+          for (const caz of ex.cazuriTest) {
+            if (!esteListaDeRanduri(caz.asteptat)) {
+              gasite.push(
+                `${unde}\n    cazul „${caz.apel}": „${caz.asteptat}" nu e o listă de rânduri.`,
+              );
+            }
+          }
+        }
       }
     }
   }
   return gasite;
+}
+
+/** Ce se cere unui test peste ce cere formatul. */
+function plangeriTest(t, unde) {
+  const gasite = [];
+  if (!t) return gasite;
+
+  if (t.intrebari.length < 2) {
+    gasite.push(`${unde}: are o singură întrebare.`);
+  }
+  for (const i of t.intrebari) {
+    const scurt = `${unde} → ${i.intrebare.slice(0, 40)}…`;
+    if (new Set(i.variante).size !== i.variante.length) {
+      gasite.push(`${scurt}: are două variante identice.`);
+    }
+    // O explicație care doar repetă varianta corectă nu învață pe nimeni.
+    if (i.explicatie.trim() === i.variante[i.corect].trim()) {
+      gasite.push(`${scurt}: explicația e chiar varianta corectă.`);
+    }
+  }
+  return gasite;
+}
+
+/** `[["Ana",5000],["Ion",2500]]` — o listă de liste, nimic altceva. */
+function esteListaDeRanduri(text) {
+  try {
+    const v = JSON.parse(text);
+    return Array.isArray(v) && v.every((r) => Array.isArray(r));
+  } catch {
+    return false;
+  }
 }
 
 /** Toate cheile cursului, ca să se vadă care s-au pierdut între două generări. */
@@ -191,17 +294,30 @@ async function faCererea(cheie) {
     );
   }
 
-  const sablon = await readFile(SABLON, "utf8");
-  const cerere = sablon.replace("__BRIEF__", (await readFile(briefing, "utf8")).trim());
-  if (cerere.includes("__BRIEF__")) {
-    throw new Oprire("șablonul n-a primit briefingul — marcajul n-a fost găsit");
+  const brief = (await readFile(briefing, "utf8")).trim();
+  const limbaj = motorulDinBrief(brief);
+
+  // Regulile de format sunt altele la fiecare motor: `repr` și cazuri cu
+  // `apel` la Python, rânduri și `pregatire` la SQL. Partea comună e una
+  // singură, ca să nu se despartă în tăcere.
+  const cerere = (await readFile(SABLON, "utf8"))
+    .replace("__LIMBAJ__", limbaj)
+    .replace(
+      "__FORMAT__",
+      (await readFile(join(dirname(SABLON), `format-${limbaj}.md`), "utf8")).trim(),
+    )
+    .replace("__BRIEF__", brief);
+
+  const ramas = cerere.match(/__(?:LIMBAJ|FORMAT|BRIEF)__/)?.[0];
+  if (ramas) {
+    throw new Oprire(`șablonul: marcajul ${ramas} n-a fost înlocuit`);
   }
 
   const iesire = join(SURSE, `${cheie}.cerere.txt`);
   await writeFile(iesire, cerere, "utf8");
 
   const kb = (Buffer.byteLength(cerere, "utf8") / 1024).toFixed(1);
-  console.log(`cerere: cursuri-sursa/${cheie}.cerere.txt, ${kb} KB.`);
+  console.log(`cerere: cursuri-sursa/${cheie}.cerere.txt, ${limbaj}, ${kb} KB.`);
   console.log(
     "Du-o la un model puternic, pune răspunsul în " +
       `cursuri-sursa/${cheie}.raspuns.json, apoi:\n` +
@@ -292,7 +408,8 @@ async function primesteRaspunsul(cheie, argumente) {
       `${ecrane} ecrane de briefing, ${exercitii} exerciții.`,
   );
   console.log(
-    "Formatul se ține. Python adevărat încă n-a rulat peste el:\n" +
+    `Formatul se ține. ${verificat.limbaj === "sql" ? "Postgres" : "Python"} ` +
+      "adevărat încă n-a rulat peste el:\n" +
       `  npm run continut:verifica ${cheie}`,
   );
 }

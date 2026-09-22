@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Afis,
   Autocolant,
@@ -15,6 +16,7 @@ import {
 } from "@/componente/dulap";
 import { Buton, ButonLegatura } from "@/componente/buton";
 import { mesajEroare } from "@/lib/date/erori";
+import { cheieCursului, cu } from "@/lib/continut/livrate";
 import { hartaCursului, type Harta } from "@/lib/date/progres";
 import { citesteSetari, scrieNumeAfisat } from "@/lib/date/setari";
 
@@ -37,7 +39,18 @@ type Stare =
   | { fel: "gata"; harta: Harta; nume: string }
   | { fel: "eroare" };
 
-export default function EcranProfil() {
+export default function Pagina() {
+  return (
+    <Suspense
+      fallback={<Vestiar>{null}</Vestiar>}
+    >
+      <EcranProfil />
+    </Suspense>
+  );
+}
+
+function EcranProfil() {
+  const cheie = cheieCursului(useSearchParams().get("curs"));
   const [stare, setStare] = useState<Stare>({ fel: "se-incarca" });
   const [salvare, setSalvare] = useState<Salvare>({ fel: "linistit" });
   // Câmpul e necontrolat: ce scrii rămâne scris chiar dacă ecranul se
@@ -47,7 +60,7 @@ export default function EcranProfil() {
   useEffect(() => {
     let anulat = false;
     (async () => {
-      const harta = await hartaCursului();
+      const harta = await hartaCursului(cheie);
       const setari = await citesteSetari();
       if (anulat) return;
       const scris = setari.numeAfisat ?? "";
@@ -59,7 +72,7 @@ export default function EcranProfil() {
     return () => {
       anulat = true;
     };
-  }, []);
+  }, [cheie]);
 
   async function salveaza() {
     if (stare.fel !== "gata") return;
@@ -178,8 +191,8 @@ export default function EcranProfil() {
       </Dulap>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <ButonLegatura href="/curs/">Înapoi la curs</ButonLegatura>
-        <ButonLegatura href="/progres/" fel="secundar">
+        <ButonLegatura href={cu("/curs/", cheie)}>Înapoi la curs</ButonLegatura>
+        <ButonLegatura href={cu("/progres/", cheie)} fel="secundar">
           Progres
         </ButonLegatura>
         <ButonLegatura href="/" fel="secundar">

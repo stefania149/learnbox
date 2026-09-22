@@ -144,15 +144,35 @@ export default function EcranCopie() {
               </p>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
                 <Rand eticheta="Scris la" valoare={candScris(citire.copie)} />
-                <Rand eticheta="Curs" valoare={citire.copie.materie} />
-                <Rand eticheta="XP în fișier" valoare={String(citire.copie.xp)} />
+                <Rand
+                  eticheta="Cursuri"
+                  valoare={
+                    citire.copie.cursuri.map((c) => c.materie).join(", ") || "—"
+                  }
+                />
+                <Rand
+                  eticheta="XP în fișier"
+                  valoare={String(
+                    citire.copie.cursuri.reduce((s, c) => s + c.xp, 0),
+                  )}
+                />
                 <Rand
                   eticheta="Încercări"
-                  valoare={String(citire.copie.incercari.length)}
+                  valoare={String(
+                    citire.copie.cursuri.reduce(
+                      (s, c) => s + c.incercari.length,
+                      0,
+                    ),
+                  )}
                 />
                 <Rand
                   eticheta="Lecții"
-                  valoare={String(citire.copie.lectii.length)}
+                  valoare={String(
+                    citire.copie.cursuri.reduce(
+                      (s, c) => s + c.lectii.length,
+                      0,
+                    ),
+                  )}
                 />
                 <Rand
                   eticheta="Nume"
@@ -190,6 +210,10 @@ export default function EcranCopie() {
                 <Rand
                   eticheta="Briefinguri"
                   valoare={String(citire.raport.briefinguriAdaugate)}
+                />
+                <Rand
+                  eticheta="Teste"
+                  valoare={String(citire.raport.testeAdaugate)}
                 />
                 <Rand
                   eticheta="XP înainte"

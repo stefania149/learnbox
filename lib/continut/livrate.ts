@@ -5,20 +5,41 @@
  * apoi în memorie, pe durata filei. Service worker-ul le are în coajă, deci
  * după prima vizită vin din depozit, și fără internet.
  *
- * Lista e scrisă aici, nu într-un catalog descărcat: un catalog ar însemna
- * încă o cerere și încă un fișier de ținut sincronizat, pentru trei rânduri.
- * Se schimbă când se adaugă cursuri (pasul 13).
+ * Lista cursurilor stă în `./cursuri`, nu într-un catalog descărcat: un
+ * catalog ar însemna încă o cerere și încă un fișier de ținut sincronizat,
+ * pentru trei rânduri.
  */
 import { citesteCurs, type CursLivrat } from "./format";
+import { CURSURI_LIVRATE, CURS_IMPLICIT, type CheieCurs } from "./cursuri";
 
 const baza = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-/** Cheia fișierului: `public/cursuri/<cheie>.json`. */
-export const CURSURI_LIVRATE = ["python"] as const;
-export type CheieCurs = (typeof CURSURI_LIVRATE)[number];
+export {
+  CURSURI_LIVRATE,
+  CURS_IMPLICIT,
+  type CheieCurs,
+} from "./cursuri";
 
-/** Cursul cu care pornește aplicația cât timp nu există alegere de curs. */
-export const CURS_IMPLICIT: CheieCurs = "python";
+/**
+ * Cursul ales stă în adresă (`/curs/?curs=sql`), nu în bază: o adresă spune
+ * întreg unde ești, se poate pune la favorite, iar butonul „înapoi" face ce
+ * trebuie. Ce vine din adresă e text de la cine vrea, deci se verifică.
+ * Vezi `PLAN.md` Î-20.
+ */
+export function cheieCursului(v: string | null | undefined): CheieCurs {
+  return (CURSURI_LIVRATE as readonly string[]).includes(v ?? "")
+    ? (v as CheieCurs)
+    : CURS_IMPLICIT;
+}
+
+/** Adresa unui ecran, cu cursul dus mai departe. */
+export function cu(cale: string, cheie: CheieCurs, alte: Record<string, string | number> = {}) {
+  const p = new URLSearchParams();
+  if (cheie !== CURS_IMPLICIT) p.set("curs", cheie);
+  for (const [k, v] of Object.entries(alte)) p.set(k, String(v));
+  const coada = p.toString();
+  return coada ? `${cale}?${coada}` : cale;
+}
 
 const aduse = new Map<string, Promise<CursLivrat>>();
 

@@ -1,7 +1,12 @@
 "use client";
 
 import { Consola, MesajCronometru, Traceback } from "@/componente/consola";
-import type { CazTest, Raport, RezultatCaz } from "@/lib/exercitii/motor";
+import type {
+  CazTest,
+  Limbaj,
+  Raport,
+  RezultatCaz,
+} from "@/lib/exercitii/motor";
 import type { SocotealaXp } from "@/lib/exercitii/xp";
 
 /** Câte cazuri se văd în enunț, înainte de prima rulare (`PLAN.md` Î-11). */
@@ -51,6 +56,18 @@ function Lista({ cazuri }: { cazuri: RezultatCaz[] }) {
   );
 }
 
+/** Ce se spune despre motorul pe care rulează exercițiul. */
+const MOTOR = {
+  python: {
+    oprit: "Python s-a oprit înainte de cazuri și a explicat de ce:",
+    prima: "La prima rulare se aduce Python întreg, ~13 MB.",
+  },
+  sql: {
+    oprit: "Postgres n-a primit interogarea și a explicat de ce:",
+    prima: "La prima rulare se aduce Postgres întreg, ~3 MB.",
+  },
+} as const;
+
 /**
  * Raportul „3 din 5" (`PLAN.md` §7). Arată cât a reușit, nu cât a greșit, și
  * nu scrie nicăieri un număr care scade (regula 4).
@@ -59,11 +76,13 @@ export function RaportCazuri({
   stare,
   cazuri,
   explicatie,
+  limbaj = "python",
 }: {
   stare: StareRaport;
   /** Cazurile declarate ale exercițiului, pentru ecranul de dinainte de rulare. */
   cazuri: CazTest[];
   explicatie?: string | null;
+  limbaj?: Limbaj;
 }) {
   if (stare.fel === "nepornita") {
     const ascunse = cazuri.length - CAZURI_ARATATE;
@@ -94,7 +113,7 @@ export function RaportCazuri({
       <>
         {stare.cazuri.length > 0 ? <Lista cazuri={stare.cazuri} /> : null}
         <p className="text-text-slab">
-          Rulează… La prima rulare se aduce Python întreg, ~13 MB.
+          Rulează… {MOTOR[limbaj].prima}
         </p>
       </>
     );
@@ -127,7 +146,7 @@ export function RaportCazuri({
       {raport.eroarePython ? (
         <Traceback
           text={raport.eroarePython}
-          titlu="Python s-a oprit înainte de cazuri și a explicat de ce:"
+          titlu={MOTOR[limbaj].oprit}
         />
       ) : null}
 

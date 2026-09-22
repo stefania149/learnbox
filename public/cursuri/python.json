@@ -2,14 +2,115 @@
   "format": "tutore-curs",
   "versiune": 1,
   "materie": "Python",
+  "limbaj": "python",
   "capitole": [
     {
       "cheie": "functii-si-bucle",
       "nume": "Funcții și bucle",
+      "test": {
+        "cheie": "test-functii-si-bucle",
+        "titlu": "Test de capitol: Funcții și bucle",
+        "intrebari": [
+          {
+            "cheie": "return-vs-print",
+            "intrebare": "Care e diferența dintre `print(x)` și `return x`?",
+            "variante": [
+              "Niciuna, sunt două feluri de a scrie același lucru",
+              "`print` arată valoarea, `return` o dă înapoi celui care a chemat funcția",
+              "`print` merge doar cu text, `return` doar cu numere"
+            ],
+            "corect": 1,
+            "explicatie": "`print` scrie pe ecran și atât — valoarea nu ajunge nicăieri unde să poată fi folosită. `return` o trimite înapoi. Un exercițiu care cere o valoare nu se rezolvă cu `print`, oricât de bine ar arăta ieșirea."
+          },
+          {
+            "cheie": "acumulator-inainte",
+            "intrebare": "Ce au în comun `total = 0` și `noua = []` într-o funcție cu buclă?",
+            "variante": [
+              "Amândouă se scriu înaintea buclei, o singură dată",
+              "Amândouă se scriu înăuntrul buclei",
+              "Amândouă trebuie să fie parametri ai funcției"
+            ],
+            "corect": 0,
+            "explicatie": "Sunt acumulatori: locul în care se strânge rezultatul pe măsură ce bucla merge. Pornesc o singură dată, înaintea buclei. Puse înăuntru, se resetează la fiecare trecere."
+          },
+          {
+            "cheie": "lista-goala-margine",
+            "intrebare": "De ce apare aproape în fiecare exercițiu un caz de test cu listă goală?",
+            "variante": [
+              "Ca să fie mai multe cazuri",
+              "Fiindcă acolo se rupe codul care pare corect: bucla nu se execută deloc",
+              "Fiindcă Python tratează listele goale altfel decât celelalte"
+            ],
+            "corect": 1,
+            "explicatie": "Pe lista goală corpul buclei nu rulează niciodată, deci iese exact valoarea de pornire a acumulatorului — sau se cere primul element, care nu există. E marginea la care se vede dacă ai gândit cazul, nu doar cazul obișnuit."
+          },
+          {
+            "cheie": "none-de-unde",
+            "intrebare": "Un caz de test spune „aștepta `6`, a dat `None`\". Ce cauți întâi în cod?",
+            "variante": [
+              "Un `return` lipsă sau pus greșit",
+              "O greșeală de calcul",
+              "O paranteză nepusă"
+            ],
+            "corect": 0,
+            "explicatie": "`None` e ce întoarce o funcție care n-a ajuns la niciun `return`. Ori lipsește, ori e înăuntrul unui `if` care nu s-a îndeplinit, ori ai scris `print` în locul lui. Calculul poate fi perfect: dacă rezultatul nu e dat înapoi, nu contează."
+          },
+          {
+            "cheie": "modulo-rest",
+            "intrebare": "`7 % 3` cât face?",
+            "variante": [
+              "`2`",
+              "`2.33`",
+              "`1`"
+            ],
+            "corect": 2,
+            "explicatie": "`%` dă restul, nu câtul: 3 intră de două ori în 7, iar ce rămâne e `1`. Câtul întreg, `2`, se ia cu `7 // 3`, iar `7 / 3` dă `2.33…`. Trei operații, trei rezultate."
+          }
+        ]
+      },
       "niveluri": [
         {
           "cheie": "functii-care-intorc-un-numar",
           "nume": "Funcții care întorc un număr",
+          "test": {
+            "cheie": "test-functii-care-intorc-un-numar",
+            "titlu": "Test: Funcții care întorc un număr",
+            "intrebari": [
+              {
+                "cheie": "ce-face-return",
+                "intrebare": "Ce face `return` într-o funcție?",
+                "variante": [
+                  "Tipărește valoarea pe ecran",
+                  "Trimite valoarea înapoi celui care a chemat funcția și oprește funcția acolo",
+                  "Salvează valoarea într-o variabilă cu numele funcției"
+                ],
+                "corect": 1,
+                "explicatie": "`return` dă valoarea înapoi și iese din funcție pe loc — ce scrii după el, în aceeași ramură, nu se mai execută. Tipărirea pe ecran e treaba lui `print`, care e cu totul altceva: `print` arată, `return` dă."
+              },
+              {
+                "cheie": "functie-fara-return",
+                "intrebare": "O funcție care nu are `return` deloc — ce întoarce când o chemi?",
+                "variante": [
+                  "`0`",
+                  "`None`",
+                  "Nimic, dă eroare"
+                ],
+                "corect": 1,
+                "explicatie": "În Python orice funcție întoarce ceva. Dacă n-ai scris `return`, întoarce `None` — și de-aia un exercițiu în care ai uitat `return` pică cu „aștepta 6, a dat None\", nu cu o eroare."
+              },
+              {
+                "cheie": "impartire-da-float",
+                "intrebare": "`def jumatate(n): return n / 2` — ce dă `jumatate(8)`?",
+                "variante": [
+                  "`4`",
+                  "`4.0`",
+                  "`8 / 2`"
+                ],
+                "corect": 1,
+                "explicatie": "Împărțirea cu `/` dă întotdeauna un număr cu zecimale, chiar când iese fix: `4.0`, nu `4`. Cazurile de test compară text cu text, deci `4` și `4.0` sunt răspunsuri diferite. Dacă vrei întreg, se folosește `//`."
+              }
+            ]
+          },
           "briefing": [
             {
               "titlu": "O funcție e un nume pus pe niște treabă",
@@ -137,6 +238,45 @@
         {
           "cheie": "bucle-peste-o-lista",
           "nume": "Bucle peste o listă",
+          "test": {
+            "cheie": "test-bucle-peste-o-lista",
+            "titlu": "Test: Bucle peste o listă",
+            "intrebari": [
+              {
+                "cheie": "unde-se-pune-acumulatorul",
+                "intrebare": "Vrei să aduni numerele dintr-o listă. Unde se scrie `total = 0`?",
+                "variante": [
+                  "Înaintea buclei",
+                  "Înăuntrul buclei, ca prima linie",
+                  "După buclă, chiar înainte de `return`"
+                ],
+                "corect": 0,
+                "explicatie": "Înaintea buclei, o singură dată. Pus înăuntru, `total` se face zero la fiecare trecere și la capăt rămâne doar ultimul număr. Pus după buclă, șterge tot ce s-a adunat."
+              },
+              {
+                "cheie": "return-in-bucla",
+                "intrebare": "Ce se întâmplă dacă `return total` e scris înăuntrul buclei, la același nivel cu adunarea?",
+                "variante": [
+                  "Se întoarce suma întreagă, la fel ca afară",
+                  "Funcția iese după primul element, deci întoarce doar primul număr",
+                  "Python dă eroare de indentare"
+                ],
+                "corect": 1,
+                "explicatie": "`return` oprește funcția în clipa în care e atins. Înăuntrul buclei, e atins la prima trecere, deci bucla nu mai apucă să meargă mai departe. E greșeala care dă „aștepta 12, a dat 5\"."
+              },
+              {
+                "cheie": "for-peste-lista-goala",
+                "intrebare": "`for x in lista:` când `lista` e goală — de câte ori se execută corpul buclei?",
+                "variante": [
+                  "O dată",
+                  "De niciun fel — zero ori",
+                  "Dă eroare"
+                ],
+                "corect": 1,
+                "explicatie": "Bucla trece prin fiecare element; dacă nu e niciunul, corpul nu se execută deloc, și nu e nicio eroare. De-aia contează ce ai pus în acumulator înainte: pe o listă goală, exact valoarea aia iese."
+              }
+            ]
+          },
           "briefing": [
             {
               "titlu": "`for` trece prin listă, element cu element",
@@ -234,6 +374,45 @@
         {
           "cheie": "conditii-inauntrul-buclei",
           "nume": "Condiții înăuntrul buclei",
+          "test": {
+            "cheie": "test-conditii-inauntrul-buclei",
+            "titlu": "Test: Condiții înăuntrul buclei",
+            "intrebari": [
+              {
+                "cheie": "numar-par",
+                "intrebare": "Care condiție spune „numărul `n` e par\"?",
+                "variante": [
+                  "`n / 2 == 0`",
+                  "`n % 2 == 0`",
+                  "`n // 2 == 0`"
+                ],
+                "corect": 1,
+                "explicatie": "`%` dă restul împărțirii. Un număr e par când restul împărțirii la doi e zero. `/` dă câtul cu zecimale, iar `//` dă câtul întreg — niciunul nu spune nimic despre paritate."
+              },
+              {
+                "cheie": "maxim-pornire",
+                "intrebare": "Cauți cel mai mare număr dintr-o listă. Cu ce e cel mai sigur să pornești?",
+                "variante": [
+                  "Cu `0`",
+                  "Cu primul element al listei",
+                  "Cu `100`, că e destul de mare"
+                ],
+                "corect": 1,
+                "explicatie": "Pornit de la `0`, o listă numai cu numere negative dă `0` — un număr care nici măcar nu e în listă. Primul element e sigur, fiindcă e un răspuns plauzibil din capul locului. Rămâne de hotărât ce faci pe lista goală, unde nu există primul element."
+              },
+              {
+                "cheie": "if-in-afara-buclei",
+                "intrebare": "Numeri câte cuvinte lungi sunt într-o listă, dar `if` e scris în afara buclei, după ea. Ce iese?",
+                "variante": [
+                  "Se verifică o singură dată, ultimul cuvânt",
+                  "Se verifică toate, dar mai încet",
+                  "Iese același rezultat, indentarea nu contează"
+                ],
+                "corect": 0,
+                "explicatie": "În Python indentarea chiar decide ce ține de ce. Scos din buclă, `if` se execută o singură dată, după ce bucla s-a terminat, iar variabila buclei a rămas cu ultima valoare. Numărătoarea iese `0` sau `1`, niciodată cât trebuie."
+              }
+            ]
+          },
           "briefing": [
             {
               "titlu": "`if` în buclă alege ce intră la socoteală",
@@ -361,6 +540,45 @@
         {
           "cheie": "liste-noi-din-liste-vechi",
           "nume": "Liste noi din liste vechi",
+          "test": {
+            "cheie": "test-liste-noi-din-liste-vechi",
+            "titlu": "Test: Liste noi din liste vechi",
+            "intrebari": [
+              {
+                "cheie": "append-intoarce",
+                "intrebare": "Ce întoarce `lista.append(5)`?",
+                "variante": [
+                  "Lista, cu 5 adăugat la coadă",
+                  "`None` — adaugă în listă, dar nu întoarce nimic",
+                  "Numărul 5"
+                ],
+                "corect": 1,
+                "explicatie": "`append` schimbă lista pe loc și întoarce `None`. De-aia `lista = lista.append(5)` e o capcană: pierzi lista și rămâi cu `None`. Se scrie doar `lista.append(5)`, pe rândul lui."
+              },
+              {
+                "cheie": "uitat-return-lista",
+                "intrebare": "O funcție construiește corect o listă nouă cu `append`, dar n-are `return`. Ce vede cine o cheamă?",
+                "variante": [
+                  "Lista construită",
+                  "`None`",
+                  "O listă goală"
+                ],
+                "corect": 1,
+                "explicatie": "Lista chiar s-a construit, dar a rămas înăuntrul funcției și a dispărut la ieșire. Fără `return`, afară ajunge `None`. E greșeala care se vede cel mai greu, fiindcă „codul arată corect\"."
+              },
+              {
+                "cheie": "unde-se-face-lista-noua",
+                "intrebare": "Unde se scrie `noua = []` când construiești o listă într-o buclă?",
+                "variante": [
+                  "Înaintea buclei",
+                  "Înăuntrul buclei",
+                  "N-are importanță"
+                ],
+                "corect": 0,
+                "explicatie": "Ca la acumulatorul de sumă: o singură dată, înaintea buclei. Înăuntru, lista se golește la fiecare trecere și la capăt rămâne cu cel mult un element."
+              }
+            ]
+          },
           "briefing": [
             {
               "titlu": "Acumulatorul poate fi o listă",
@@ -475,6 +693,45 @@
         {
           "cheie": "cand-bucla-nu-se-opreste",
           "nume": "Când bucla nu se oprește",
+          "test": {
+            "cheie": "test-cand-bucla-nu-se-opreste",
+            "titlu": "Test: Când bucla nu se oprește",
+            "intrebari": [
+              {
+                "cheie": "de-ce-nu-se-opreste",
+                "intrebare": "`while n > 0:` și înăuntru doar `total = total + n`. De ce nu se oprește?",
+                "variante": [
+                  "Fiindcă `while` merge la nesfârșit din construcție",
+                  "Fiindcă nimic nu schimbă pe `n`, deci condiția rămâne adevărată mereu",
+                  "Fiindcă lipsește `return`"
+                ],
+                "corect": 1,
+                "explicatie": "O buclă `while` se oprește doar când condiția devine falsă. Dacă în corp nimic nu atinge variabila din condiție, condiția rămâne adevărată pe vecie. Pasul care schimbă variabila e partea care se uită cel mai des."
+              },
+              {
+                "cheie": "ce-face-jocul",
+                "intrebare": "Ce face jocul dacă scrii o buclă care nu se oprește?",
+                "variante": [
+                  "Îngheață fila și trebuie s-o închizi",
+                  "O oprește după cinci secunde și îți spune ce s-a întâmplat",
+                  "Refuză să ruleze codul"
+                ],
+                "corect": 1,
+                "explicatie": "Codul rulează pe un fir separat, cu cronometru. La cinci secunde firul e oprit și repornit, iar cazurile care apucaseră să treacă rămân trecute. Interfața nu se blochează niciodată."
+              },
+              {
+                "cheie": "while-vs-for",
+                "intrebare": "Când e `while` alegerea potrivită, în locul lui `for`?",
+                "variante": [
+                  "Când nu știi dinainte de câte ori trebuie repetat",
+                  "Când ai o listă de parcurs",
+                  "Când vrei cod mai rapid"
+                ],
+                "corect": 0,
+                "explicatie": "`for` merge peste ceva ce se poate parcurge — o listă, un interval — deci numărul de treceri e știut dinainte. `while` e pentru „repetă până se întâmplă ceva\": împarte la doi până ajungi la unu, de exemplu."
+              }
+            ]
+          },
           "briefing": [
             {
               "titlu": "`while` repetă cât timp condiția e adevărată",

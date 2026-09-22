@@ -24,4 +24,12 @@ export const migrari: Migrare[] = [
     nume: "0004_chei_stabile.sql",
     sql: "ALTER TABLE \"capitol\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD COLUMN \"ordine\" integer;--> statement-breakpoint\nALTER TABLE \"nivel\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"capitol\" ADD CONSTRAINT \"capitol_cheie\" UNIQUE(\"materie_id\",\"cheie\");--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD CONSTRAINT \"exercitiu_cheie\" UNIQUE(\"nivel_id\",\"cheie\");--> statement-breakpoint\nALTER TABLE \"nivel\" ADD CONSTRAINT \"nivel_cheie\" UNIQUE(\"capitol_id\",\"cheie\");",
   },
+  {
+    nume: "0005_limbajul_exercitiului.sql",
+    sql: "ALTER TABLE \"exercitiu\" ADD COLUMN \"limbaj\" text;",
+  },
+  {
+    nume: "0006_testele.sql",
+    sql: "ALTER TABLE \"test\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"test\" ADD COLUMN \"titlu\" text;--> statement-breakpoint\nALTER TABLE \"test\" ADD CONSTRAINT \"test_nivel\" UNIQUE(\"nivel_id\");--> statement-breakpoint\nALTER TABLE \"test\" ADD CONSTRAINT \"test_capitol\" UNIQUE(\"capitol_id\");",
+  },
 ];

@@ -36,6 +36,20 @@
       "when": 1789997677593,
       "tag": "0004_chei_stabile",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790057328474,
+      "tag": "0005_limbajul_exercitiului",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790073743979,
+      "tag": "0006_testele",
+      "breakpoints": true
     }
   ]
 }

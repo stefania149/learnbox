@@ -12,7 +12,7 @@
  */
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { deschideBaza } from "./client";
-import { capitol, exercitiu, materie, nivel } from "./schema";
+import { capitol, exercitiu, materie, nivel, test } from "./schema";
 import {
   cursLivrat,
   CURS_IMPLICIT,
@@ -22,16 +22,29 @@ import type {
   CapitolLivrat,
   CursLivrat,
   EcranBriefing,
+  IntrebareTest,
+  TestLivrat,
 } from "@/lib/continut/format";
-import type { CazTest } from "@/lib/exercitii/motor";
+import type { CazTest, Limbaj } from "@/lib/exercitii/motor";
 
-export type { EcranBriefing };
+export type { EcranBriefing, IntrebareTest };
 export type Exercitiu = typeof exercitiu.$inferSelect;
 export type Nivel = typeof nivel.$inferSelect;
+export type Test = typeof test.$inferSelect;
+
+/** Întrebările ajung în `jsonb`, deci se citesc înapoi ca `unknown`. */
+export function intrebarile(t: Test): IntrebareTest[] {
+  return (t.intrebari ?? []) as IntrebareTest[];
+}
 
 /** Cazurile ajung în `jsonb`, deci se citesc înapoi ca `unknown`. */
 export function cazurile(e: Exercitiu): CazTest[] {
   return (e.cazuriTest ?? []) as CazTest[];
+}
+
+/** Pe ce motor se rulează. Rândurile scrise înainte de cursul de SQL n-au coloana. */
+export function limbajul(e: Exercitiu): Limbaj {
+  return e.limbaj === "sql" ? "sql" : "python";
 }
 
 export function briefingul(n: Nivel): EcranBriefing[] {
@@ -92,10 +105,43 @@ async function idMaterie(nume: string): Promise<number> {
   return noua.id;
 }
 
+/**
+ * Testul unei lecții sau al unui capitol. Una dintre cele două legături e
+ * dată, cealaltă e nulă — rândul e unic pe fiecare, deci se poate reașeza
+ * fără să se dubleze. Ca peste tot, ce a răspuns utilizatorul nu se atinge:
+ * încercările trimit la `test.id`, iar `id`-ul rămâne al lui.
+ */
+async function asazaTestul(
+  legatura: { nivelId: number } | { capitolId: number },
+  livrat: TestLivrat | undefined,
+) {
+  if (!livrat) return;
+  const { baza } = await deschideBaza();
+
+  const unde =
+    "nivelId" in legatura
+      ? eq(test.nivelId, legatura.nivelId)
+      : eq(test.capitolId, legatura.capitolId);
+
+  const vechi = await baza.select().from(test).where(unde);
+  const continut = {
+    cheie: livrat.cheie,
+    titlu: livrat.titlu,
+    intrebari: livrat.intrebari,
+  };
+
+  if (vechi[0]) {
+    await baza.update(test).set(continut).where(eq(test.id, vechi[0].id));
+  } else {
+    await baza.insert(test).values({ ...legatura, ...continut });
+  }
+}
+
 async function asazaCapitolul(
   materieId: number,
   livrat: CapitolLivrat,
   ordineCapitol: number,
+  limbaj: Limbaj,
 ) {
   const { baza } = await deschideBaza();
 
@@ -193,15 +239,23 @@ async function asazaCapitolul(
       if (deja) {
         await baza
           .update(exercitiu)
-          .set({ ...continut, ordine: ordineExercitiu })
+          .set({ ...continut, limbaj, ordine: ordineExercitiu })
           .where(eq(exercitiu.id, deja.id));
       } else {
-        await baza
-          .insert(exercitiu)
-          .values({ ...continut, cheie, nivelId, ordine: ordineExercitiu });
+        await baza.insert(exercitiu).values({
+          ...continut,
+          limbaj,
+          cheie,
+          nivelId,
+          ordine: ordineExercitiu,
+        });
       }
     }
+
+    await asazaTestul({ nivelId }, livratNivel.test);
   }
+
+  await asazaTestul({ capitolId: cap.id }, livrat.test);
 }
 
 async function asaza(cheieCurs: CheieCurs): Promise<{
@@ -213,7 +267,7 @@ async function asaza(cheieCurs: CheieCurs): Promise<{
   let ordine = 0;
   for (const cap of curs.capitole) {
     ordine += 1;
-    await asazaCapitolul(materieId, cap, ordine);
+    await asazaCapitolul(materieId, cap, ordine, curs.limbaj);
   }
   return { materieId, curs };
 }
