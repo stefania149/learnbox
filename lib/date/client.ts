@@ -95,6 +95,20 @@ export async function migrariAplicate(pg: ClientBaza) {
   return r.rows;
 }
 
+/**
+ * Numărul din fața numelui: `0003_nume_afisat.sql` → `0003`.
+ *
+ * **După el se ține evidența, nu după numele întreg.** `drizzle-kit` dă
+ * fișierelor nume la întâmplare („0003_wandering_spider"), iar noi le
+ * rebotezăm ca să se citească. Dacă o bază a apucat să aplice migrarea sub
+ * numele generat, cu evidența pe numele întreg rebotezarea o face să pară
+ * neaplicată — și migrarea se reia peste o coloană care există deja. Numărul
+ * nu se schimbă niciodată, deci e singurul bun de ținut minte.
+ */
+function numarul(nume: string): string {
+  return nume.slice(0, 4);
+}
+
 async function aplicaMigrari(pg: ClientBaza) {
   await pg.exec(`
     create table if not exists migrare_aplicata (
@@ -103,10 +117,23 @@ async function aplicaMigrari(pg: ClientBaza) {
     );
   `);
 
-  const aplicate = new Set((await migrariAplicate(pg)).map((r) => r.nume));
+  const randuri = await migrariAplicate(pg);
+  const aplicate = new Map(randuri.map((r) => [numarul(r.nume), r.nume]));
+
+  // Rândurile rămase cu numele generat își iau numele de acum, ca ecranul de
+  // diagnostic să arate ce e în repo. Nimic nu se reaplică: doar eticheta.
+  for (const migrare of migrari) {
+    const vechi = aplicate.get(numarul(migrare.nume));
+    if (vechi === undefined || vechi === migrare.nume) continue;
+    await pg.query(
+      `update migrare_aplicata set nume = $1 where nume = $2
+         and not exists (select 1 from migrare_aplicata where nume = $1)`,
+      [migrare.nume, vechi],
+    );
+  }
 
   for (const migrare of migrari) {
-    if (aplicate.has(migrare.nume)) continue;
+    if (aplicate.has(numarul(migrare.nume))) continue;
 
     // Drizzle desparte instrucțiunile cu acest marcaj.
     const instructiuni = migrare.sql
