@@ -22,7 +22,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 5 | Editorul de cod (CodeMirror) + consola de rezultat | Terminat | Colorarea sintaxei trece prin tokenuri de temă, ca restul. `Tab` mută focalizarea, nu indentează — altfel cine merge din tastatură rămâne prins în editor. |
 | 6 | Navigarea joc: curs → capitol → lecție → briefing → practică | Terminat | Deblocarea lecțiilor a venit tot aici, altfel harta n-avea ce arăta; ecranul de progres și restul XP-ului rămân la pasul 7. O lecție se termină când ai **încercat** fiecare exercițiu (`PLAN.md` Î-14). |
 | 7 | XP, deblocare de lecții, ecranul de progres | Terminat | Deblocarea venise la pasul 6. XP-ul care nu vine dintr-o încercare (briefing, revenire) trăiește doar în totaluri, nu are rând propriu — vezi `PLAN.md` Î-15. Testele de lecție și de capitol din tabelul §8 vin la pasul 14. |
-| 8 | Un capitol de Python scris de mână, cap-coadă | Terminat | Capitolul „Funcții și bucle”: 5 lecții, 16 ecrane de briefing, 18 exerciții, în `lib/continut/`. `npm run continut:verifica` rulează Python adevărat peste tot capitolul: soluția trebuie să treacă toate cazurile, codul de pornire nu. |
+| 8 | Un capitol de Python scris de mână, cap-coadă | Terminat | Capitolul „Funcții și bucle”: 5 lecții, 16 ecrane de briefing, 18 exerciții (mutate în `public/cursuri/python.json` la pasul 11). `npm run continut:verifica` rulează Python adevărat peste tot capitolul: soluția trebuie să treacă toate cazurile, codul de pornire nu. |
 | 9 | Export/import progres în fișier | Terminat | Ecranul `/copie/`, cu fișier JSON `tutore-progres-<data>.json`. Citirea e aditivă: nu șterge nimic, sare încercările pe care le ai deja (același exercițiu, aceeași clipă), iar XP-ul iese cel mai mare dintre cel de dinainte, cel din fișier și cel reconstituit din bază. Fișierul nu conține cursul, deci se leagă de exerciții după enunț. |
 | 10 | PWA: instalabil, cu iconiță, offline | Terminat | Manifest, iconițe făcute din SVG la build, și un service worker scris de mână. Coaja (2,3 MB) intră în depozit la instalare; Pyodide și PGlite se rețin pe drum sau la cerere, de pe ecranul „Aplicația" (`PLAN.md` Î-18). O versiune nouă așteaptă să închizi filele, ca să nu amesteci bucăți de cod vechi cu noi. |
 
@@ -31,7 +31,7 @@ GitHub Pages. **Aici e linia de demo.**
 | # | Pas | Status | Notițe |
 |---|---|---|---|
 | 11 | Formatul de curs livrat (JSON) + validare la încărcare | Terminat | Cursul stă în `public/cursuri/python.json`, se aduce cu `fetch` și trece printr-un validator scris de mână (`lib/continut/format.ts`) înainte să atingă baza. Migrarea 0004 aduce `cheie` pe capitol, lecție și exercițiu, plus `ordine` pe exercițiu: un enunț rescris nu mai înseamnă exercițiu nou. Bazele de dinainte își primesc cheile la prima așezare, potrivite după nume. |
-| 12 | Unealta de generare a cursurilor livrate, rulată la autor | Neinceput | |
+| 12 | Unealta de generare a cursurilor livrate, rulată la autor | Terminat | `scripts/fa-cursul.mjs`: `cerere` adună briefingul autorului cu regulile casei, `primeste` calculează cheile, trece răspunsul prin validatorul aplicației și îl așază în `public/cursuri/`. Modelul se cheamă de mână, fără cheie API (`PLAN.md` Î-19). O cheie care ar dispărea între două generări oprește scrierea: ar însemna încercări orfane. |
 | 13 | Două-trei cursuri livrate complete | Neinceput | |
 | 14 | Testele de lecție și de capitol | Neinceput | |
 | 15 | Arhiva deblocabilă | Neinceput | |

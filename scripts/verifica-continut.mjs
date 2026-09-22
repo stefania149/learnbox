@@ -18,13 +18,17 @@ import { citesteCurs } from "../lib/continut/format.ts";
 // Se citește din fișierul de curs livrat, prin aceeași verificare de format pe
 // care o face aplicația la încărcare (pasul 11): dacă fișierul e stricat, se
 // află aici, nu în browserul cuiva.
+//
+// Cursul se dă ca argument (`npm run continut:verifica sql`); fără argument se
+// ia cel implicit. De la pasul 12 fișierele nu mai sunt scrise de mână, deci
+// verificarea trebuie să meargă peste oricare dintre ele.
 const radacina = join(dirname(fileURLToPath(import.meta.url)), "..");
+const CHEIE = process.argv[2] ?? "python";
 const CURS = citesteCurs(
   JSON.parse(
-    await readFile(join(radacina, "public", "cursuri", "python.json"), "utf8"),
+    await readFile(join(radacina, "public", "cursuri", `${CHEIE}.json`), "utf8"),
   ),
 );
-const CAPITOL = CURS.capitole[0];
 
 /** Cât lăsăm un caz să meargă, în pași de interpretor. */
 const PASI_MAXIM = 500_000;
@@ -91,9 +95,13 @@ async function treceCazurile(cod, cazuri) {
   }));
 }
 
-for (const nivel of CAPITOL.niveluri) {
+const NIVELURI = CURS.capitole.flatMap((c) =>
+  c.niveluri.map((n) => ({ ...n, capitol: c.nume })),
+);
+
+for (const nivel of NIVELURI) {
   for (const ex of nivel.exercitii) {
-    const unde = `${nivel.nume} → ${ex.enunt.slice(0, 50)}…`;
+    const unde = `${nivel.capitol} → ${nivel.nume} → ${ex.enunt.slice(0, 50)}…`;
 
     if (ex.cazuriTest.length < 3) {
       plangeri.push(`${unde}: are doar ${ex.cazuriTest.length} cazuri.`);
@@ -118,12 +126,14 @@ for (const nivel of CAPITOL.niveluri) {
   }
 }
 
-const exercitii = CAPITOL.niveluri.reduce((s, n) => s + n.exercitii.length, 0);
-const ecrane = CAPITOL.niveluri.reduce((s, n) => s + n.briefing.length, 0);
+const exercitii = NIVELURI.reduce((s, n) => s + n.exercitii.length, 0);
+const ecrane = NIVELURI.reduce((s, n) => s + n.briefing.length, 0);
+const capitole = CURS.capitole.map((c) => `„${c.nume}"`).join(", ");
 
 console.log(
-  `„${CAPITOL.nume}": ${CAPITOL.niveluri.length} lecții, ${ecrane} ecrane de briefing, ` +
-    `${exercitii} exerciții, ${cazuriRulate} rulări de cazuri.`,
+  `${CURS.materie} — ${capitole}: ${NIVELURI.length} lecții, ` +
+    `${ecrane} ecrane de briefing, ${exercitii} exerciții, ` +
+    `${cazuriRulate} rulări de cazuri.`,
 );
 
 if (plangeri.length > 0) {

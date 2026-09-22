@@ -544,3 +544,11 @@ Nu e terminat până nu trec toate cinci:
   ceri, iar ecranul „Aplicația" are un buton care le aduce dinadins. Depozitul
   coajei se aruncă la fiecare versiune nouă, al motoarelor numai când se
   schimbă ele.*
+- **Î-19.** Cum ajunge cererea la modelul care scrie cursul livrat (pasul 12)?
+  Un apel automat ar cere o cheie API în mediul autorului și ar lega unealta
+  de un furnizor anume; §6 spune doar „un model puternic, o dată, la autor".
+  *Provizoriu: de mână. `scripts/fa-cursul.mjs cerere` scrie cererea într-un
+  fișier, autorul o duce la ce model vrea, pune răspunsul înapoi și
+  `primeste` îl așază. Costă zero, nu cere nicio cheie în repo și lasă autorul
+  să vadă ce a ieșit înainte să se scrie ceva. Dacă pasul 13 se dovedește prea
+  greoi așa, se adaugă un furnizor automat lângă drumul ăsta, nu în locul lui.*

@@ -11,7 +11,9 @@
     "export:serveste": "node scripts/serveste-exportul.mjs",
     "lint": "eslint",
     "date:genereaza": "drizzle-kit generate && node scripts/impacheteaza-migrari.mjs",
-    "continut:verifica": "node --experimental-strip-types scripts/verifica-continut.mjs"
+    "continut:verifica": "node --experimental-strip-types scripts/verifica-continut.mjs",
+    "curs:cere": "node --experimental-strip-types scripts/fa-cursul.mjs cerere",
+    "curs:primeste": "node --experimental-strip-types scripts/fa-cursul.mjs primeste"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",

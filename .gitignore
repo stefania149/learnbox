@@ -42,3 +42,7 @@ next-env.d.ts
 
 # PGlite copiat din node_modules la fiecare build (scripts/vendor-pglite.mjs)
 /public/vendor/
+
+# Cererea dusă la model și răspunsul brut: se refac oricând din brief (pasul 12)
+/cursuri-sursa/*.cerere.txt
+/cursuri-sursa/*.raspuns.json
