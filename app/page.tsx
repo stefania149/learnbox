@@ -11,7 +11,7 @@ import {
   TitluCrt,
   type ElementMeniu,
 } from "@/componente/terminal";
-import { CAPITOL, MATERIE } from "@/lib/continut/functii-si-bucle";
+import { REZUMAT } from "@/lib/continut/rezumat";
 
 /**
  * Coperta: primul ecran, desenat ca un calculator de acum patruzeci de ani.
@@ -21,8 +21,8 @@ import { CAPITOL, MATERIE } from "@/lib/continut/functii-si-bucle";
  * ~30 MB de WebAssembly se descarcă abia când intri în curs.
  */
 
-const LECTII = CAPITOL.niveluri.length;
-const EXERCITII = CAPITOL.niveluri.reduce((s, n) => s + n.exercitii.length, 0);
+const LECTII = REZUMAT.lectii;
+const EXERCITII = REZUMAT.exercitii;
 
 const MENIU: ElementMeniu[] = [
   { href: "/", eticheta: "Acasă", icoana: "monitor", activ: true },
@@ -74,10 +74,10 @@ export default function Acasa() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <CampCrt eticheta="Curs" valoare={MATERIE} />
+            <CampCrt eticheta="Curs" valoare={REZUMAT.materie} />
             <CampCrt
               eticheta="Capitolul 1"
-              valoare={CAPITOL.nume}
+              valoare={REZUMAT.capitol}
               detaliu={`${LECTII} lecții · ${EXERCITII} exerciții · lecțiile se deschid pe rând`}
             />
             <CampCrt

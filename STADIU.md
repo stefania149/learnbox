@@ -30,7 +30,7 @@ GitHub Pages. **Aici e linia de demo.**
 
 | # | Pas | Status | Notițe |
 |---|---|---|---|
-| 11 | Formatul de curs livrat (JSON) + validare la încărcare | Neinceput | |
+| 11 | Formatul de curs livrat (JSON) + validare la încărcare | Terminat | Cursul stă în `public/cursuri/python.json`, se aduce cu `fetch` și trece printr-un validator scris de mână (`lib/continut/format.ts`) înainte să atingă baza. Migrarea 0004 aduce `cheie` pe capitol, lecție și exercițiu, plus `ordine` pe exercițiu: un enunț rescris nu mai înseamnă exercițiu nou. Bazele de dinainte își primesc cheile la prima așezare, potrivite după nume. |
 | 12 | Unealta de generare a cursurilor livrate, rulată la autor | Neinceput | |
 | 13 | Două-trei cursuri livrate complete | Neinceput | |
 | 14 | Testele de lecție și de capitol | Neinceput | |
@@ -70,9 +70,6 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   pe amândouă ca motoare, ca să nu se redescarce la fiecare versiune, dar
   cauza rămâne de găsit: probabil un import din `lib/date/client.ts` care
   trage pachetul și în bucata principală.
-- **Actualizarea nu s-a probat în viață.** Regula „versiunea nouă așteaptă să
-  închizi filele" e scrisă și arătată de ecran, dar s-a verificat pe o singură
-  versiune de service worker; a doua se vede abia la următoarea publicare.
 - **PGlite nu trece prin împachetător.** `scripts/copiaza-vendor.mjs` îl copiază
   în `public/vendor/` la fiecare build, fiindcă Turbopack fie pierde legătura
   către `instantiateWasm`, fie (cu `transpilePackages`) bagă cod care cere
@@ -81,16 +78,17 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie. Pentru instalare nu mai cântărește
   la fel de mult: la instalare se ia doar coaja, 2,3 MB (`PLAN.md` Î-18).
-- **Conținutul livrat n-are chei stabile.** Capitolul stă în
-  `lib/continut/functii-si-bucle.ts` și intră în bază printr-un pachet aplicat
-  o dată (`lib/date/seminte.ts`). Potrivirea cu ce e deja în bază se face după
-  numele lecției și după enunțul exercițiului, fiindcă schema n-are coloană de
-  cheie; din același motiv, ordinea exercițiilor în lecție se ia din fișierul
-  de conținut, nu din `id`. Un enunț rescris înseamnă un exercițiu nou, nu unul
-  actualizat. Se repară la pasul 11, cu formatul de curs livrat.
-  Copia de progres (pasul 9) suferă de același lucru: o încercare din fișier
-  al cărei enunț s-a rescris între timp nu-și mai găsește exercițiul și se
-  numără la „exerciții necunoscute", nu se pierde tăcut.
+- **Potrivirea după nume a rămas ca punte.** De la pasul 11 conținutul se
+  leagă după `cheie`, dar `lib/date/seminte.ts` și `lib/date/copie.ts` știu
+  încă să potrivească după nume și enunț: o bază făcută înainte de migrarea
+  0004 are rânduri fără cheie, iar copiile de progres de versiunea 1 n-au
+  chei deloc. Puntea se poate scoate când nu mai e plauzibil să existe astfel
+  de baze — dar nu înainte, fiindcă scoaterea ei înseamnă progres pierdut.
+- **`samanta_aplicata` nu mai e scrisă de nimeni.** Ținea pachetele de conținut
+  aplicate o dată pe viață de bază. Cu chei stabile, așezarea cursului e
+  idempotentă și se reia la fiecare încărcare de filă, deci tabelul e gol de
+  sens. A rămas în schemă fiindcă o migrare care șterge un tabel nu se scrie
+  ca să facă ordine.
 - **Preîncărcarea rutelor, reparată la build.** Next 16 scrie bucata de
   preîncărcare într-un folder `__next.<ruta>/`, dar browserul o cere ca fișier
   `__next.<ruta>.__PAGE__.txt`. `scripts/repara-preincarcarea.mjs` o pune și în

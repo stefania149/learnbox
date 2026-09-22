@@ -20,4 +20,8 @@ export const migrari: Migrare[] = [
     nume: "0003_nume_afisat.sql",
     sql: "ALTER TABLE \"setari\" ADD COLUMN \"nume_afisat\" text;",
   },
+  {
+    nume: "0004_chei_stabile.sql",
+    sql: "ALTER TABLE \"capitol\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD COLUMN \"ordine\" integer;--> statement-breakpoint\nALTER TABLE \"nivel\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"capitol\" ADD CONSTRAINT \"capitol_cheie\" UNIQUE(\"materie_id\",\"cheie\");--> statement-breakpoint\nALTER TABLE \"exercitiu\" ADD CONSTRAINT \"exercitiu_cheie\" UNIQUE(\"nivel_id\",\"cheie\");--> statement-breakpoint\nALTER TABLE \"nivel\" ADD CONSTRAINT \"nivel_cheie\" UNIQUE(\"capitol_id\",\"cheie\");",
+  },
 ];

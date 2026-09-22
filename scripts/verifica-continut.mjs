@@ -8,9 +8,23 @@
  * Rulează aceleași bucăți ca aplicația: preludiul de determinism și hamul de
  * cazuri din `lib/exercitii`. Se cheamă cu `npm run continut:verifica`.
  */
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadPyodide } from "pyodide";
-import { CAPITOL } from "../lib/continut/functii-si-bucle.ts";
 import { PRELUDIU, SAMANTA } from "../lib/exercitii/determinism.ts";
+import { citesteCurs } from "../lib/continut/format.ts";
+
+// Se citește din fișierul de curs livrat, prin aceeași verificare de format pe
+// care o face aplicația la încărcare (pasul 11): dacă fișierul e stricat, se
+// află aici, nu în browserul cuiva.
+const radacina = join(dirname(fileURLToPath(import.meta.url)), "..");
+const CURS = citesteCurs(
+  JSON.parse(
+    await readFile(join(radacina, "public", "cursuri", "python.json"), "utf8"),
+  ),
+);
+const CAPITOL = CURS.capitole[0];
 
 /** Cât lăsăm un caz să meargă, în pași de interpretor. */
 const PASI_MAXIM = 500_000;

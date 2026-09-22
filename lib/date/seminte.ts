@@ -1,45 +1,33 @@
 /**
- * Aducerea bazei locale la zi cu ce scrie în capitolul livrat.
+ * Aducerea bazei locale la zi cu fișierul de curs livrat.
  *
- * Merge ca migrările: un pachet se aplică o dată și se trece în
- * `samanta_aplicata`. Conținutul nou înseamnă pachet nou, nu rescrierea celui
- * vechi — `incercare` trimite la exercițiile livrate și istoricul nu se pierde
- * (`PLAN.md` §11).
+ * De la pasul 11, potrivirea se face după `cheie`, nu după nume și enunț.
+ * Asta schimbă totul: un enunț rescris rămâne același exercițiu, cu aceleași
+ * încercări în spate. Așezarea se poate deci relua oricând — e o potrivire,
+ * nu o turnare — și nu mai are nevoie de pachete aplicate o dată pe viață.
  *
- * Potrivirea cu ce e deja în bază se face după nume (lecțiile) și după enunț
- * (exercițiile), fiindcă schema n-are chei stabile de conținut. Vin la pasul
- * 11, odată cu formatul de curs livrat.
+ * Nimic nu se șterge, nici aici: o lecție scoasă din fișier rămâne în bază,
+ * cu istoricul ei. `incercare` trimite la exerciții, iar `incercare` e
+ * imutabilă (principiul 8).
  */
-import { asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { deschideBaza } from "./client";
-import { capitol, exercitiu, materie, nivel, samantaAplicata } from "./schema";
-import { CAPITOL, MATERIE } from "@/lib/continut/functii-si-bucle";
+import { capitol, exercitiu, materie, nivel } from "./schema";
+import {
+  cursLivrat,
+  CURS_IMPLICIT,
+  type CheieCurs,
+} from "@/lib/continut/livrate";
+import type {
+  CapitolLivrat,
+  CursLivrat,
+  EcranBriefing,
+} from "@/lib/continut/format";
 import type { CazTest } from "@/lib/exercitii/motor";
-import type { EcranBriefing } from "@/lib/continut/functii-si-bucle";
 
 export type { EcranBriefing };
 export type Exercitiu = typeof exercitiu.$inferSelect;
 export type Nivel = typeof nivel.$inferSelect;
-
-export const NUME_MATERIE = MATERIE;
-
-/** Numele pachetului. Se schimbă când se schimbă conținutul livrat. */
-const PACHET = "python-functii-si-bucle-1";
-
-/**
- * Ordinea exercițiilor în lecție e cea din capitolul livrat, nu cea din bază:
- * schema n-are coloană de ordine pe `exercitiu`, iar un exercițiu adăugat mai
- * târziu ar cădea la coadă doar fiindcă are `id` mai mare.
- */
-const ORDINEA = new Map(
-  CAPITOL.niveluri
-    .flatMap((n) => n.exercitii)
-    .map((e, i) => [e.enunt, i] as const),
-);
-
-export function ordineaLivrata(enunt: string): number {
-  return ORDINEA.get(enunt) ?? Number.MAX_SAFE_INTEGER;
-}
 
 /** Cazurile ajung în `jsonb`, deci se citesc înapoi ca `unknown`. */
 export function cazurile(e: Exercitiu): CazTest[] {
@@ -51,69 +39,102 @@ export function briefingul(n: Nivel): EcranBriefing[] {
   return b?.ecrane ?? [];
 }
 
-async function idMaterie(): Promise<number> {
+/**
+ * Puntea peste pasul 11: o bază de dinainte are rânduri fără `cheie`. Se
+ * completează o dată, potrivind cum se potrivea înainte — lecțiile după nume,
+ * exercițiile după enunț. Ce nu se recunoaște rămâne fără cheie și e tratat
+ * mai departe ca al nimănui: nu se șterge, doar nu se mai actualizează.
+ */
+async function leagaRandurileVechi(cap: { id: number }, livrat: CapitolLivrat) {
+  const { baza } = await deschideBaza();
+
+  const fataCheie = await baza
+    .select()
+    .from(nivel)
+    .where(and(eq(nivel.capitolId, cap.id), isNull(nivel.cheie)));
+  if (fataCheie.length === 0) return;
+
+  for (const n of livrat.niveluri) {
+    const vechi = fataCheie.find((v) => v.nume === n.nume);
+    if (!vechi) continue;
+    await baza
+      .update(nivel)
+      .set({ cheie: n.cheie })
+      .where(eq(nivel.id, vechi.id));
+
+    const exVechi = await baza
+      .select()
+      .from(exercitiu)
+      .where(and(eq(exercitiu.nivelId, vechi.id), isNull(exercitiu.cheie)));
+    for (const e of n.exercitii) {
+      const potrivit = exVechi.find((v) => v.enunt === e.enunt);
+      if (!potrivit) continue;
+      await baza
+        .update(exercitiu)
+        .set({ cheie: e.cheie })
+        .where(eq(exercitiu.id, potrivit.id));
+    }
+  }
+}
+
+async function idMaterie(nume: string): Promise<number> {
   const { baza } = await deschideBaza();
   const existente = await baza
     .select()
     .from(materie)
-    .where(eq(materie.nume, NUME_MATERIE));
+    .where(eq(materie.nume, nume));
   if (existente[0]) return existente[0].id;
 
   const [noua] = await baza
     .insert(materie)
-    .values({ nume: NUME_MATERIE, sursa: "livrat" })
+    .values({ nume, sursa: "livrat" })
     .returning();
   return noua.id;
 }
 
-/** Rulează pachetul o singură dată, pe viață de bază de date. */
-async function odata(nume: string, treaba: () => Promise<void>) {
-  const { baza } = await deschideBaza();
-  const scris = await baza
-    .insert(samantaAplicata)
-    .values({ nume })
-    .onConflictDoNothing()
-    .returning();
-  if (scris.length === 0) return;
-
-  try {
-    await treaba();
-  } catch (e) {
-    // Dacă pachetul n-a intrat, nu-l însemnăm ca intrat.
-    await baza.delete(samantaAplicata).where(eq(samantaAplicata.nume, nume));
-    throw e;
-  }
-}
-
-/**
- * Pune în bază capitolul din `lib/continut`, fără să șteargă nimic: lecțiile
- * și exercițiile care există se aduc la zi, cele care lipsesc se adaugă. Un
- * exercițiu mutat între lecții își păstrează încercările.
- */
-async function asazaCapitolul(materieId: number) {
+async function asazaCapitolul(
+  materieId: number,
+  livrat: CapitolLivrat,
+  ordineCapitol: number,
+) {
   const { baza } = await deschideBaza();
 
-  const capitole = await baza
+  const dupaCheie = await baza
     .select()
     .from(capitol)
-    .where(eq(capitol.materieId, materieId))
-    .orderBy(asc(capitol.ordine));
+    .where(and(eq(capitol.materieId, materieId), eq(capitol.cheie, livrat.cheie)));
+
+  // O bază dinainte de pasul 11 are capitolul fără cheie; se recunoaște după
+  // nume, o singură dată, și primește cheia.
+  const faraCheie = dupaCheie[0]
+    ? []
+    : await baza
+        .select()
+        .from(capitol)
+        .where(and(eq(capitol.materieId, materieId), isNull(capitol.cheie)))
+        .orderBy(asc(capitol.ordine));
 
   const cap =
-    capitole[0] ??
+    dupaCheie[0] ??
+    faraCheie.find((c) => c.nume === livrat.nume) ??
     (
       await baza
         .insert(capitol)
-        .values({ materieId, nume: CAPITOL.nume, ordine: 1 })
+        .values({
+          materieId,
+          cheie: livrat.cheie,
+          nume: livrat.nume,
+          ordine: ordineCapitol,
+        })
         .returning()
     )[0];
 
-  if (cap.nume !== CAPITOL.nume) {
-    await baza
-      .update(capitol)
-      .set({ nume: CAPITOL.nume })
-      .where(eq(capitol.id, cap.id));
-  }
+  await baza
+    .update(capitol)
+    .set({ cheie: livrat.cheie, nume: livrat.nume, ordine: ordineCapitol })
+    .where(eq(capitol.id, cap.id));
+
+  await leagaRandurileVechi(cap, livrat);
 
   const niveluriVechi = await baza
     .select()
@@ -134,23 +155,27 @@ async function asazaCapitolul(materieId: number) {
       : [];
 
   let ordine = 0;
-  for (const livrat of CAPITOL.niveluri) {
+  for (const livratNivel of livrat.niveluri) {
     ordine += 1;
-    const briefing = { ecrane: livrat.briefing };
-    const vechi = niveluriVechi.find((n) => n.nume === livrat.nume);
+    const briefing = { ecrane: livratNivel.briefing };
+    const vechi = niveluriVechi.find((n) => n.cheie === livratNivel.cheie);
 
     const nivelId = vechi
-      ? (await baza
-          .update(nivel)
-          .set({ ordine, briefing })
-          .where(eq(nivel.id, vechi.id))
-          .returning())[0].id
+      ? (
+          await baza
+            .update(nivel)
+            // `stare` nu se atinge: e progresul utilizatorului, nu conținut.
+            .set({ nume: livratNivel.nume, ordine, briefing })
+            .where(eq(nivel.id, vechi.id))
+            .returning()
+        )[0].id
       : (
           await baza
             .insert(nivel)
             .values({
               capitolId: cap.id,
-              nume: livrat.nume,
+              cheie: livratNivel.cheie,
+              nume: livratNivel.nume,
               ordine,
               briefing,
               stare: ordine === 1 ? "deschis" : "blocat",
@@ -158,22 +183,68 @@ async function asazaCapitolul(materieId: number) {
             .returning()
         )[0].id;
 
-    for (const ex of livrat.exercitii) {
-      const deja = exercitiiVechi.find((e) => e.enunt === ex.enunt);
+    let ordineExercitiu = 0;
+    for (const ex of livratNivel.exercitii) {
+      ordineExercitiu += 1;
+      const { cheie, ...continut } = ex;
+      const deja = exercitiiVechi.find(
+        (e) => e.cheie === cheie && e.nivelId === nivelId,
+      );
       if (deja) {
         await baza
           .update(exercitiu)
-          .set({ ...ex, nivelId })
+          .set({ ...continut, ordine: ordineExercitiu })
           .where(eq(exercitiu.id, deja.id));
       } else {
-        await baza.insert(exercitiu).values({ ...ex, nivelId });
+        await baza
+          .insert(exercitiu)
+          .values({ ...continut, cheie, nivelId, ordine: ordineExercitiu });
       }
     }
   }
 }
 
-export async function aplicaSeminte(): Promise<number> {
-  const materieId = await idMaterie();
-  await odata(PACHET, () => asazaCapitolul(materieId));
-  return materieId;
+async function asaza(cheieCurs: CheieCurs): Promise<{
+  materieId: number;
+  curs: CursLivrat;
+}> {
+  const curs = await cursLivrat(cheieCurs);
+  const materieId = await idMaterie(curs.materie);
+  let ordine = 0;
+  for (const cap of curs.capitole) {
+    ordine += 1;
+    await asazaCapitolul(materieId, cap, ordine);
+  }
+  return { materieId, curs };
+}
+
+/**
+ * O dată pe încărcarea filei. Așezarea e idempotentă, dar n-are rost s-o
+ * refacem la fiecare ecran.
+ */
+const inLucru = new Map<string, Promise<{ materieId: number; curs: CursLivrat }>>();
+
+function odataPePagina(cheieCurs: CheieCurs) {
+  const deja = inLucru.get(cheieCurs);
+  if (deja) return deja;
+  const promisiune = asaza(cheieCurs).catch((e: unknown) => {
+    inLucru.delete(cheieCurs);
+    throw e;
+  });
+  inLucru.set(cheieCurs, promisiune);
+  return promisiune;
+}
+
+/** Întoarce `id`-ul materiei, după ce s-a asigurat că e așezat cursul. */
+export async function aplicaSeminte(
+  cheieCurs: CheieCurs = CURS_IMPLICIT,
+): Promise<number> {
+  return (await odataPePagina(cheieCurs)).materieId;
+}
+
+/** Numele cursului livrat, așa cum apare pe ecran. */
+export async function numeMateriei(
+  cheieCurs: CheieCurs = CURS_IMPLICIT,
+): Promise<string> {
+  return (await odataPePagina(cheieCurs)).curs.materie;
 }

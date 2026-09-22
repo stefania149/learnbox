@@ -4,9 +4,12 @@
  * — nu există server și nu există cont (`PLAN.md` §3).
  *
  * Fișierul nu conține cursul. Cursul vine cu aplicația, deci se scrie doar ce
- * ai făcut tu: încercările, briefingurile citite, XP-ul și setările. Legătura
- * cu exercițiile se face după numele lecției și după enunț, ca la semințe —
- * schema n-are chei stabile de conținut până la pasul 11.
+ * ai făcut tu: încercările, briefingurile citite, XP-ul și setările.
+ *
+ * De la pasul 11, legătura cu exercițiile se face după `cheie` — numele
+ * stabil din fișierul de curs. Enunțul și numele lecției rămân scrise în
+ * copie, din două motive: se citește de om, și un fișier de versiunea 1, de
+ * dinainte de chei, se poate încă lega după ele.
  *
  * La citire nu se șterge nimic. `incercare` e imutabilă (regula 8): o
  * încercare din fișier care nu e în bază se adaugă ca rând nou, una care e
@@ -23,16 +26,20 @@ import {
   progresNivel,
   setari,
 } from "./schema";
-import { aplicaSeminte, NUME_MATERIE } from "./seminte";
+import { aplicaSeminte, numeMateriei } from "./seminte";
 import { adaugaXp, citesteXpTotal } from "./incercari";
 import { citesteSetari } from "./setari";
 import { scrieProgresNivel } from "./progres";
 import { XP } from "@/lib/exercitii/xp";
 
 export const FORMAT = "tutore-progres";
-export const VERSIUNE = 1;
+export const VERSIUNE = 2;
+/** Versiunile pe care aplicația încă știe să le citească. */
+const CITIBILE = [1, 2];
 
 export type IncercareCopie = {
+  /** Cheia stabilă a exercițiului. Lipsește în fișierele de versiunea 1. */
+  cheie: string | null;
   lectie: string;
   exercitiu: string;
   raspuns: string | null;
@@ -45,6 +52,7 @@ export type IncercareCopie = {
 };
 
 export type LectieCopie = {
+  cheie: string | null;
   nume: string;
   briefingCitit: boolean;
 };
@@ -137,7 +145,7 @@ export async function faceCopie(): Promise<FisierCopie> {
     format: FORMAT,
     versiune: VERSIUNE,
     scrisLa: new Date().toISOString(),
-    materie: NUME_MATERIE,
+    materie: await numeMateriei(),
     xp: await citesteXpTotal(materieId),
     setari: {
       numeAfisat: ale.numeAfisat,
@@ -145,6 +153,7 @@ export async function faceCopie(): Promise<FisierCopie> {
       temaActiva: ale.temaActiva,
     },
     lectii: niveluri.map((n) => ({
+      cheie: n.cheie,
       nume: n.nume,
       briefingCitit: briefinguri.get(n.id) ?? false,
     })),
@@ -153,6 +162,7 @@ export async function faceCopie(): Promise<FisierCopie> {
       if (!ex) return [];
       return [
         {
+          cheie: ex.cheie,
           lectie: numeLectie.get(ex.nivelId) ?? "",
           exercitiu: ex.enunt,
           raspuns: i.raspuns,
@@ -210,9 +220,9 @@ export function citesteCopie(text: string): FisierCopie {
     );
   }
 
-  if (f.versiune !== VERSIUNE) {
+  if (typeof f.versiune !== "number" || !CITIBILE.includes(f.versiune)) {
     throw new Error(
-      `Copia e scrisă în versiunea ${String(f.versiune)}, iar aplicația citește versiunea ${VERSIUNE}.`,
+      `Copia e scrisă în versiunea ${String(f.versiune)}, iar aplicația citește ${CITIBILE.join(" și ")}.`,
     );
   }
 
@@ -222,16 +232,23 @@ export function citesteCopie(text: string): FisierCopie {
 
   return {
     format: FORMAT,
-    versiune: VERSIUNE,
+    // Se ține versiunea din fișier: de ea depinde după ce se leagă mai jos.
+    versiune: f.versiune,
     scrisLa: typeof f.scrisLa === "string" ? f.scrisLa : "",
-    materie: typeof f.materie === "string" ? f.materie : NUME_MATERIE,
+    materie: typeof f.materie === "string" ? f.materie : "—",
     xp: intreg(f.xp),
     setari: setarile(f.setari),
     lectii: f.lectii.flatMap((l): LectieCopie[] => {
       if (typeof l !== "object" || l === null) return [];
       const r = l as Record<string, unknown>;
       if (typeof r.nume !== "string") return [];
-      return [{ nume: r.nume, briefingCitit: r.briefingCitit === true }];
+      return [
+        {
+          cheie: sirSauNimic(r.cheie),
+          nume: r.nume,
+          briefingCitit: r.briefingCitit === true,
+        },
+      ];
     }),
     incercari: f.incercari.flatMap((i): IncercareCopie[] => {
       if (typeof i !== "object" || i === null) return [];
@@ -242,6 +259,7 @@ export function citesteCopie(text: string): FisierCopie {
       if (Number.isNaN(Date.parse(r.cand))) return [];
       return [
         {
+          cheie: sirSauNimic(r.cheie),
           lectie: typeof r.lectie === "string" ? r.lectie : "",
           exercitiu: r.exercitiu,
           raspuns: sirSauNimic(r.raspuns),
@@ -302,9 +320,26 @@ export async function aplicaCopie(copie: FisierCopie): Promise<RaportCopie> {
   const { baza } = await deschideBaza();
 
   const { niveluri, exercitii } = await continutulMateriei(materieId);
-  const dupaNume = new Map(niveluri.map((n) => [n.nume, n.id]));
   const nivelulExercitiului = new Map(exercitii.map((e) => [e.id, e.nivelId]));
+
+  // Două hărți, în ordinea în care se încearcă: cheia e adevărul, enunțul e
+  // puntea către fișierele de versiunea 1 și către bazele nemigrate încă.
+  const nivelDupaCheie = new Map(
+    niveluri.flatMap((n) => (n.cheie ? [[n.cheie, n.id] as const] : [])),
+  );
+  const nivelDupaNume = new Map(niveluri.map((n) => [n.nume, n.id]));
+  const dupaCheie = new Map(
+    exercitii.flatMap((e) => (e.cheie ? [[e.cheie, e.id] as const] : [])),
+  );
   const dupaEnunt = new Map(exercitii.map((e) => [e.enunt, e.id]));
+
+  const gasesteExercitiul = (i: IncercareCopie): number | undefined =>
+    (i.cheie === null ? undefined : dupaCheie.get(i.cheie)) ??
+    dupaEnunt.get(i.exercitiu);
+
+  const gasesteLectia = (l: LectieCopie): number | undefined =>
+    (l.cheie === null ? undefined : nivelDupaCheie.get(l.cheie)) ??
+    nivelDupaNume.get(l.nume);
 
   const xpInainte = await citesteXpTotal(materieId);
 
@@ -335,7 +370,7 @@ export async function aplicaCopie(copie: FisierCopie): Promise<RaportCopie> {
   const atinse = new Set<number>();
 
   for (const i of copie.incercari) {
-    const exercitiuId = dupaEnunt.get(i.exercitiu);
+    const exercitiuId = gasesteExercitiul(i);
     if (exercitiuId === undefined) {
       exercitiiNecunoscute += 1;
       continue;
@@ -369,7 +404,7 @@ export async function aplicaCopie(copie: FisierCopie): Promise<RaportCopie> {
   let briefinguriAdaugate = 0;
   for (const l of copie.lectii) {
     if (!l.briefingCitit) continue;
-    const nivelId = dupaNume.get(l.nume);
+    const nivelId = gasesteLectia(l);
     if (nivelId === undefined) continue;
 
     const scrise = await baza

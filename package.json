@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/copiaza-vendor.mjs && node scripts/fa-iconite.mjs",
+    "predev": "node scripts/copiaza-vendor.mjs && node scripts/fa-iconite.mjs && node scripts/fa-rezumatul.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/copiaza-vendor.mjs && node scripts/fa-iconite.mjs",
+    "prebuild": "node scripts/copiaza-vendor.mjs && node scripts/fa-iconite.mjs && node scripts/fa-rezumatul.mjs",
     "build": "next build && node scripts/repara-preincarcarea.mjs && node scripts/fa-service-worker.mjs",
     "start": "next start",
     "export:serveste": "node scripts/serveste-exportul.mjs",

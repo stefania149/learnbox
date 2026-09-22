@@ -28,42 +28,66 @@ export const materie = pgTable("materie", {
   stareGenerare: text("stare_generare").notNull().default("gata"),
 });
 
-export const capitol = pgTable("capitol", {
-  id: serial("id").primaryKey(),
-  materieId: integer("materie_id")
-    .notNull()
-    .references(() => materie.id),
-  nume: text("nume").notNull(),
-  ordine: integer("ordine").notNull(),
-});
+/**
+ * `cheie` e numele stabil din fisierul de curs livrat: `nume` si `enunt` se
+ * pot rescrie oricand, ea nu, fiindca de ea atarna progresul. Coloana e
+ * nullable fiindca o baza dinainte de pasul 11 are randuri fara ea; se
+ * completeaza la prima asezare a cursului.
+ */
+export const capitol = pgTable(
+  "capitol",
+  {
+    id: serial("id").primaryKey(),
+    materieId: integer("materie_id")
+      .notNull()
+      .references(() => materie.id),
+    cheie: text("cheie"),
+    nume: text("nume").notNull(),
+    ordine: integer("ordine").notNull(),
+  },
+  (t) => [unique("capitol_cheie").on(t.materieId, t.cheie)],
+);
 
-export const nivel = pgTable("nivel", {
-  id: serial("id").primaryKey(),
-  capitolId: integer("capitol_id")
-    .notNull()
-    .references(() => capitol.id),
-  nume: text("nume").notNull(),
-  ordine: integer("ordine").notNull(),
-  briefing: jsonb("briefing"),
-  stare: text("stare").notNull().default("blocat"),
-});
+export const nivel = pgTable(
+  "nivel",
+  {
+    id: serial("id").primaryKey(),
+    capitolId: integer("capitol_id")
+      .notNull()
+      .references(() => capitol.id),
+    cheie: text("cheie"),
+    nume: text("nume").notNull(),
+    ordine: integer("ordine").notNull(),
+    briefing: jsonb("briefing"),
+    stare: text("stare").notNull().default("blocat"),
+  },
+  (t) => [unique("nivel_cheie").on(t.capitolId, t.cheie)],
+);
 
-export const exercitiu = pgTable("exercitiu", {
-  id: serial("id").primaryKey(),
-  nivelId: integer("nivel_id")
-    .notNull()
-    .references(() => nivel.id),
-  // 'completeaza' | 'repara' | 'scrie' | 'liber'
-  tip: text("tip").notNull(),
-  enunt: text("enunt").notNull(),
-  codInitial: text("cod_initial"),
-  solutie: text("solutie"),
-  cazuriTest: jsonb("cazuri_test"),
-  rubrica: jsonb("rubrica"),
-  // Explicația greșelilor tipice, scrisă la generare: fără ea, un utilizator
-  // fără model n-ar primi niciun răspuns util (`PLAN.md` §11).
-  explicatiePredefinita: text("explicatie_predefinita"),
-});
+export const exercitiu = pgTable(
+  "exercitiu",
+  {
+    id: serial("id").primaryKey(),
+    nivelId: integer("nivel_id")
+      .notNull()
+      .references(() => nivel.id),
+    cheie: text("cheie"),
+    // Ordinea in lectie. Pana la pasul 11 se lua din fisierul de continut:
+    // `id` creste, deci un exercitiu adaugat tarziu cadea la coada.
+    ordine: integer("ordine"),
+    // 'completeaza' | 'repara' | 'scrie' | 'liber'
+    tip: text("tip").notNull(),
+    enunt: text("enunt").notNull(),
+    codInitial: text("cod_initial"),
+    solutie: text("solutie"),
+    cazuriTest: jsonb("cazuri_test"),
+    rubrica: jsonb("rubrica"),
+    // Explicația greșelilor tipice, scrisă la generare: fără ea, un utilizator
+    // fără model n-ar primi niciun răspuns util (`PLAN.md` §11).
+    explicatiePredefinita: text("explicatie_predefinita"),
+  },
+  (t) => [unique("exercitiu_cheie").on(t.nivelId, t.cheie)],
+);
 
 export const test = pgTable("test", {
   id: serial("id").primaryKey(),

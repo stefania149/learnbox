@@ -18,12 +18,7 @@ import {
   progresNivel,
   setari,
 } from "./schema";
-import {
-  aplicaSeminte,
-  ordineaLivrata,
-  type Exercitiu,
-  type Nivel,
-} from "./seminte";
+import { aplicaSeminte, type Exercitiu, type Nivel } from "./seminte";
 import { adaugaXp, citesteXpTotal } from "./incercari";
 import { PAUZA_ORE, XP } from "@/lib/exercitii/xp";
 
@@ -183,9 +178,16 @@ export async function citesteLectie(nivelId: number): Promise<Lectie | null> {
   const gasit = await baza.select().from(nivel).where(eq(nivel.id, nivelId));
   if (!gasit[0]) return null;
 
+  // Ordinea stă în coloană de la pasul 11; înainte se lua din fișierul de
+  // conținut, fiindcă `id` crește și un exercițiu adăugat târziu cădea la
+  // coadă. Cele fără ordine (dintr-o bază veche, nerecunoscute) merg la urmă.
   const exercitii = (
     await baza.select().from(exercitiu).where(eq(exercitiu.nivelId, nivelId))
-  ).sort((a, b) => ordineaLivrata(a.enunt) - ordineaLivrata(b.enunt));
+  ).sort(
+    (a, b) =>
+      (a.ordine ?? Number.MAX_SAFE_INTEGER) -
+      (b.ordine ?? Number.MAX_SAFE_INTEGER),
+  );
 
   const incercari = await baza
     .select({ exercitiuId: incercare.exercitiuId })
