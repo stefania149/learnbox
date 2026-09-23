@@ -5,7 +5,7 @@
 import { eq } from "drizzle-orm";
 import { deschideBaza } from "./client";
 import { setari } from "./schema";
-import { temaValida, type Tema } from "@/lib/teme/teme";
+import { temaValida, TEMA_AUTOMATA } from "@/lib/teme/teme";
 
 export const REGISTRE_TON = [
   {
@@ -69,13 +69,28 @@ export async function scrieModelDescarcat() {
   return scrise[0];
 }
 
-/** Tema aleasă — pasul 24. Un `id` din afara listei se prinde la implicită. */
+/**
+ * Cursul curent — pasul 25, scris din `lib/date/seminte.ts` la fiecare
+ * așezare. Ține minte ce curs arăți acum, ca tema „auto" să știe a cui e
+ * implicita (`componente/tema.tsx`); nu e o alegere a utilizatorului.
+ */
+export async function scrieMaterieActiva(materieId: number) {
+  const { baza } = await deschideBaza();
+  await citesteSetari();
+  await baza.update(setari).set({ materieActiva: materieId }).where(eq(setari.id, 1));
+}
+
+/**
+ * Tema aleasă — pasul 24. `auto` (pasul 25) e un sentinel valid, nu o temă —
+ * `temaValida` nu-l cunoaște, l-ar prinde la implicită. Orice alt id din
+ * afara listei se prinde la implicită.
+ */
 export async function scrieTemaActiva(tema: string) {
   const { baza } = await deschideBaza();
   await citesteSetari();
   const scrise = await baza
     .update(setari)
-    .set({ temaActiva: temaValida(tema) satisfies Tema })
+    .set({ temaActiva: tema === TEMA_AUTOMATA ? TEMA_AUTOMATA : temaValida(tema) })
     .where(eq(setari.id, 1))
     .returning();
   return scrise[0];

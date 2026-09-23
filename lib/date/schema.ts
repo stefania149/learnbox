@@ -244,7 +244,9 @@ export const setari = pgTable(
   "setari",
   {
     id: integer("id").primaryKey().default(1),
-    temaActiva: text("tema_activa").notNull().default("sobra"),
+    // 'auto' — urmează tema implicită a cursului curent (`materie.tema_implicita`,
+    // pasul 25); orice alt id fixează o temă, indiferent de curs.
+    temaActiva: text("tema_activa").notNull().default("auto"),
     // 'jucaus' | 'neutru' | 'sec' (`PLAN.md` §8)
     registruTon: text("registru_ton").notNull().default("neutru"),
     materieActiva: integer("materie_activa").references(() => materie.id),

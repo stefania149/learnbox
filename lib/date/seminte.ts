@@ -19,6 +19,8 @@ import {
   CURS_PROPRIU,
   type CheieCurs,
 } from "@/lib/continut/livrate";
+import type { CheieCursLivrat } from "@/lib/continut/cursuri";
+import { scrieMaterieActiva } from "./setari";
 import type {
   CapitolLivrat,
   EcranBriefing,
@@ -90,20 +92,38 @@ async function leagaRandurileVechi(cap: { id: number }, livrat: CapitolLivrat) {
   }
 }
 
-async function idMaterie(nume: string): Promise<number> {
+async function idMaterie(nume: string, temaImplicita: string): Promise<number> {
   const { baza } = await deschideBaza();
   const existente = await baza
     .select()
     .from(materie)
     .where(eq(materie.nume, nume));
-  if (existente[0]) return existente[0].id;
+  if (existente[0]) {
+    // O bază dinainte de pasul 25 are rândul fără temă implicită — se
+    // completează la prima așezare de-acum, ca și restul conținutului livrat.
+    if (existente[0].temaImplicita !== temaImplicita) {
+      await baza.update(materie).set({ temaImplicita }).where(eq(materie.id, existente[0].id));
+    }
+    return existente[0].id;
+  }
 
   const [noua] = await baza
     .insert(materie)
-    .values({ nume, sursa: "livrat" })
+    .values({ nume, sursa: "livrat", temaImplicita })
     .returning();
   return noua.id;
 }
+
+/**
+ * Tema implicită a fiecărui curs livrat — pasul 25 (`PLAN.md` §10): Python
+ * ține tema „terminal" din capul locului, SQL primește „minimalistă" (o
+ * limbă precisă, fără ornament). Materialul propriu e „caldă" — vezi
+ * `materiaProprieRand`.
+ */
+const TEMA_CURSULUI: Record<CheieCursLivrat, string> = {
+  python: "terminal",
+  sql: "minimalista",
+};
 
 /**
  * Testul unei lecții sau al unui capitol. Una dintre cele două legături e
@@ -269,11 +289,17 @@ async function materiaProprieRand() {
     .select()
     .from(materie)
     .where(eq(materie.sursa, "generat"));
-  if (gasita[0]) return gasita[0];
+  if (gasita[0]) {
+    if (gasita[0].temaImplicita !== "calda") {
+      await baza.update(materie).set({ temaImplicita: "calda" }).where(eq(materie.id, gasita[0].id));
+      gasita[0].temaImplicita = "calda";
+    }
+    return gasita[0];
+  }
 
   const [noua] = await baza
     .insert(materie)
-    .values({ nume: "Materialul tău", sursa: "generat" })
+    .values({ nume: "Materialul tău", sursa: "generat", temaImplicita: "calda" })
     .returning();
   return noua;
 }
@@ -299,16 +325,18 @@ async function asaza(cheieCurs: CheieCurs): Promise<{
 }> {
   if (cheieCurs === CURS_PROPRIU) {
     const rand = await materiaProprieRand();
+    await scrieMaterieActiva(rand.id);
     return { materieId: rand.id, curs: { materie: rand.nume } };
   }
 
   const curs = await cursLivrat(cheieCurs);
-  const materieId = await idMaterie(curs.materie);
+  const materieId = await idMaterie(curs.materie, TEMA_CURSULUI[cheieCurs as CheieCursLivrat]);
   let ordine = 0;
   for (const cap of curs.capitole) {
     ordine += 1;
     await asazaCapitolul(materieId, cap, ordine, curs.limbaj);
   }
+  await scrieMaterieActiva(materieId);
   return { materieId, curs };
 }
 

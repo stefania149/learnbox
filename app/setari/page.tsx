@@ -19,7 +19,8 @@ import {
   type RegistruTon,
   type Setari,
 } from "@/lib/date/setari";
-import { TEME } from "@/lib/teme/teme";
+import { TEME, TEMA_AUTOMATA } from "@/lib/teme/teme";
+import { temaCurenta } from "@/lib/teme/rezolva";
 
 type Stare =
   | { fel: "se-incarca" }
@@ -64,11 +65,15 @@ export default function EcranSetari() {
 
   async function alegeTema(valoare: string) {
     setSeScrie(true);
-    // Vizibil imediat, nu doar după ce scrie baza de date — o temă se simte
-    // schimbată pe loc, nu „la reîncărcare" (spre deosebire de ton, mai jos).
-    document.documentElement.dataset.tema = valoare;
     try {
       const noi = await scrieTemaActiva(valoare);
+      // Vizibil imediat, nu doar după ce scrie baza de date — o temă se simte
+      // schimbată pe loc, nu „la reîncărcare" (spre deosebire de ton, mai jos).
+      // „Automat" nu e o temă CSS — se rezolvă la cursul curent, ca oriunde.
+      document.documentElement.dataset.tema = await temaCurenta(
+        noi.temaActiva,
+        noi.materieActiva,
+      );
       setStare({ fel: "gata", setari: noi });
       setSalvatLa(new Date());
     } catch (e) {
@@ -117,6 +122,15 @@ export default function EcranSetari() {
               legenda="Temă"
               ajutor="Cum arată tot jocul. Se schimbă pe loc, pe orice ecran."
             >
+              <Alegere
+                nume="tema-activa"
+                valoare={TEMA_AUTOMATA}
+                titlu="Automat"
+                explicatie="Fiecare curs cu tema lui potrivită."
+                aleasa={stare.setari.temaActiva === TEMA_AUTOMATA}
+                dezactivata={seScrie}
+                onAlege={alegeTema}
+              />
               {TEME.map((tema) => (
                 <Alegere
                   key={tema.id}

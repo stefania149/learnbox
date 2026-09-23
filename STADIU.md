@@ -54,7 +54,7 @@ GitHub Pages. **Aici e linia de demo.**
 | # | Pas | Status | Notițe |
 |---|---|---|---|
 | 24 | Sistemul de teme ca date + tokenuri | Terminat | Temele sunt un selector `[data-tema="..."]` peste aceleași nume de tokenuri (`app/globals.css`); `componente/tema.tsx` pune atributul pe `<html>`, citit din `setari.tema_activa`. Nicio componentă nu s-a atins ca să adauge a doua temă — testul principiului 9. Doi picker în `/setari/`: „Sobră" (nouă, implicită — gri neutru, accent albastru, colțuri mai mici) și „Terminal" (paleta de până acum, redenumită). Comutarea e instant, fără reîncărcare. Testat cap-coadă: schimbat live pe `/setari/`, verificat propagarea pe `/curs/` și `/profil/`, persistă după reîncărcare. Un bug găsit și reparat: un bloc `:root { --tema-dulap-*: ... }` rămas neșters din refactorizare aplica mereu paleta terminal peste `/profil/`, indiferent de tema aleasă — `:root` fiind neconditionat, câștiga cascada în fața `[data-tema="sobra"]`. Cele două teme rămase din §10 („caldă", „minimalistă") și tema implicită per curs vin la pasul 25. |
-| 25 | Cele patru teme + tema implicită per curs | Neinceput | |
+| 25 | Cele patru teme + tema implicită per curs | Terminat | Ultimele două teme din §10: „caldă" (chihlimbar/teracotă, pentru materialul tău) și „minimalistă" (alb-negru, fără raze, fără mascotă — SQL). Migrarea 0011 schimbă implicita lui `setari.tema_activa` din „sobra" în `auto` — un sentinel, nu o temă: `/setari/` are acum o a patra opțiune, „Automat", care urmează tema cursului curent. `materie.tema_implicita` se scrie la fiecare așezare (Python → terminal, SQL → minimalistă, materialul tău → caldă), iar `setari.materie_activa` ține minte care e cursul curent — amândouă scrise din `lib/date/seminte.ts`, singurul loc unde un curs se așază. Testat cap-coadă: comutat pe „Automat", verificat că `/curs/` arată terminal la Python, minimalistă la SQL și caldă la materialul tău, fiecare confirmat vizual. Un bug real găsit și reparat: `scrieTemaActiva` trecea orice valoare prin `temaValida`, care nu cunoștea sentinelul „auto" și-l prindea tăcut la „sobra" — alegerea „Automat" nu se salva niciodată. |
 | 26 | Reacția mascotei la zero XP + cele trei registre de ton | Neinceput | |
 | 27 | Răspunsuri libere cu rubrică, pentru materiile fără execuție | Neinceput | Partea care poate eșua — vezi `PLAN.md` §13 |
 
@@ -64,6 +64,13 @@ GitHub Pages. **Aici e linia de demo.**
 
 Limitări de prototip, de reparat înainte de a considera produsul gata.
 
+- **Tema „automat" întârzie o filă la prima vizită a unui curs nou.**
+  `componente/tema.tsx` citește `setari.materie_activa` la montare, dar
+  `lib/date/seminte.ts` o scrie separat, în timp ce așază cursul; prima oară
+  când intri într-un curs nou într-o filă, tema veche rămâne pe ecran până la
+  următoarea navigare sau reîncărcare. Nu strică nimic — doar arată o temă în
+  urmă, o dată. De reparat când temele au un eveniment propriu, nu doar citire
+  la montare.
 - **PGlite se livrează de două ori.** Pe lângă copia din `public/vendor/`,
   Turbopack împachetează încă una în `_next/static/media/` — 16 MB degeaba,
   fiindcă worker-ul o folosește doar pe prima. Service worker-ul le tratează

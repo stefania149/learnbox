@@ -112,6 +112,100 @@
   --tema-dunga-5: oklch(0.55 0.04 255);
 }
 
+/* Tema „caldă" — pentru materialul tău (`PLAN.md` §10): chihlimbar și
+   teracotă, colțuri mai rotunjite, mascotă expresivă (pasul 26). */
+[data-tema="calda"] {
+  --tema-fundal: oklch(0.2 0.03 40);
+  --tema-rama: oklch(0.26 0.035 45);
+  --tema-rama-slab: oklch(0.22 0.03 42);
+  --tema-rama-contur: oklch(0.38 0.05 50);
+  --tema-rama-text: oklch(0.75 0.06 60);
+  --tema-sticla: oklch(0.17 0.03 35);
+  --tema-suprafata: oklch(0.23 0.035 40);
+  --tema-contur: oklch(0.35 0.05 45);
+
+  --tema-text: oklch(0.88 0.05 70);
+  --tema-text-slab: oklch(0.72 0.05 60);
+  --tema-accent: oklch(0.78 0.15 55);
+  --tema-accent-text: oklch(0.2 0.04 40);
+
+  --tema-raza: 1rem;
+  --tema-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  --tema-font: var(--tema-font-mono);
+
+  --tema-cod-cuvant: oklch(0.82 0.15 45);
+  --tema-cod-nume: oklch(0.8 0.1 200);
+  --tema-cod-sir: oklch(0.78 0.14 130);
+  --tema-cod-numar: oklch(0.85 0.13 85);
+  --tema-cod-comentariu: oklch(0.6 0.03 50);
+  --tema-cod-rand-activ: oklch(0.26 0.035 42);
+
+  --tema-dulap-camera: oklch(0.2 0.03 40);
+  --tema-dulap-metal: oklch(0.26 0.035 45);
+  --tema-dulap-metal-slab: oklch(0.22 0.03 42);
+  --tema-dulap-margine: oklch(0.38 0.05 50);
+  --tema-dulap-interior: oklch(0.17 0.03 35);
+  --tema-dulap-afis: oklch(0.23 0.035 40);
+  --tema-dulap-raft: oklch(0.32 0.04 48);
+  --tema-dulap-lampa: oklch(0.78 0.15 55);
+  --tema-dulap-scris: oklch(0.82 0.13 70);
+  --tema-dulap-text: oklch(0.88 0.05 70);
+  --tema-dulap-text-slab: oklch(0.72 0.05 60);
+
+  --tema-dunga-1: oklch(0.65 0.19 25);
+  --tema-dunga-2: oklch(0.72 0.17 45);
+  --tema-dunga-3: oklch(0.8 0.15 70);
+  --tema-dunga-4: oklch(0.75 0.14 55);
+  --tema-dunga-5: oklch(0.68 0.16 35);
+}
+
+/* Tema „minimalistă" — fără mascotă (`PLAN.md` §10): alb-negru, fără raze,
+   fără decor cromatic. Accentul e tot un gri, nu o culoare. */
+[data-tema="minimalista"] {
+  --tema-fundal: oklch(0.12 0 0);
+  --tema-rama: oklch(0.16 0 0);
+  --tema-rama-slab: oklch(0.14 0 0);
+  --tema-rama-contur: oklch(0.3 0 0);
+  --tema-rama-text: oklch(0.6 0 0);
+  --tema-sticla: oklch(0.1 0 0);
+  --tema-suprafata: oklch(0.16 0 0);
+  --tema-contur: oklch(0.28 0 0);
+
+  --tema-text: oklch(0.95 0 0);
+  --tema-text-slab: oklch(0.65 0 0);
+  --tema-accent: oklch(0.9 0 0);
+  --tema-accent-text: oklch(0.12 0 0);
+
+  --tema-raza: 0rem;
+  --tema-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  --tema-font: var(--tema-font-mono);
+
+  --tema-cod-cuvant: oklch(0.85 0 0);
+  --tema-cod-nume: oklch(0.75 0 0);
+  --tema-cod-sir: oklch(0.65 0 0);
+  --tema-cod-numar: oklch(0.8 0 0);
+  --tema-cod-comentariu: oklch(0.45 0 0);
+  --tema-cod-rand-activ: oklch(0.18 0 0);
+
+  --tema-dulap-camera: oklch(0.12 0 0);
+  --tema-dulap-metal: oklch(0.16 0 0);
+  --tema-dulap-metal-slab: oklch(0.14 0 0);
+  --tema-dulap-margine: oklch(0.3 0 0);
+  --tema-dulap-interior: oklch(0.1 0 0);
+  --tema-dulap-afis: oklch(0.16 0 0);
+  --tema-dulap-raft: oklch(0.24 0 0);
+  --tema-dulap-lampa: oklch(0.9 0 0);
+  --tema-dulap-scris: oklch(0.75 0 0);
+  --tema-dulap-text: oklch(0.95 0 0);
+  --tema-dulap-text-slab: oklch(0.65 0 0);
+
+  --tema-dunga-1: oklch(0.35 0 0);
+  --tema-dunga-2: oklch(0.5 0 0);
+  --tema-dunga-3: oklch(0.65 0 0);
+  --tema-dunga-4: oklch(0.8 0 0);
+  --tema-dunga-5: oklch(0.5 0 0);
+}
+
 /* Coperta retro: ecranul pe care cade utilizatorul când intră. E un obiect —
    un monitor pe un birou — deci culorile lui nu urmează schema luminoasă sau
    întunecată a sistemului; sunt aceleași mereu, ca o fotografie. Tot tokenuri

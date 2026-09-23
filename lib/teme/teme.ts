@@ -1,12 +1,10 @@
 /**
- * Registrul temelor — pasul 24 (`PLAN.md` §10). O temă e date: un `id` care
- * se scrie în `setari.tema_activa` și devine `[data-tema]` pe `<html>`
- * (`componente/tema.tsx`), plus valorile ei în `app/globals.css`. Niciun
- * ecran nu citește lista asta ca să deseneze ceva diferit — doar ecranul de
- * setări, ca să arate opțiunile.
+ * Registrul temelor — pașii 24-25 (`PLAN.md` §10). O temă e date: un `id`
+ * care devine `[data-tema]` pe `<html>` (`componente/tema.tsx`), plus
+ * valorile ei în `app/globals.css`. Niciun ecran nu citește lista asta ca să
+ * deseneze ceva diferit — doar ecranul de setări, ca să arate opțiunile.
  *
- * La v1 (`PLAN.md` §10): patru teme. Aici sunt cele două făcute până acum;
- * „caldă" și „minimalistă" vin la pasul 25.
+ * Cele patru de la v1 (`PLAN.md` §10).
  */
 export const TEME = [
   {
@@ -19,10 +17,27 @@ export const TEME = [
     nume: "Terminal",
     explicatie: "Monitor retro, sticlă verde — potrivită materiilor tehnice.",
   },
+  {
+    id: "calda",
+    nume: "Caldă",
+    explicatie: "Chihlimbar și teracotă — potrivită materialului tău.",
+  },
+  {
+    id: "minimalista",
+    nume: "Minimalistă",
+    explicatie: "Alb-negru, colțuri drepte, fără decor.",
+  },
 ] as const;
 
 export type Tema = (typeof TEME)[number]["id"];
 export const TEMA_IMPLICITA: Tema = "sobra";
+
+/**
+ * `setari.tema_activa` poate fi „auto" — nu e o temă, ci un sentinel: „arată
+ * tema implicită a cursului curent" (`materie.tema_implicita`), nu o alegere
+ * fixă. Ecranul de setări o arată ca a patra opțiune, separat de listă.
+ */
+export const TEMA_AUTOMATA = "auto";
 
 export function temaValida(id: string | null | undefined): Tema {
   return (TEME as readonly { id: string }[]).some((t) => t.id === id)

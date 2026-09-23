@@ -1,0 +1,1 @@
+ALTER TABLE "setari" ALTER COLUMN "tema_activa" SET DEFAULT 'auto';
