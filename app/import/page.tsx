@@ -202,6 +202,9 @@ export default function EcranImport() {
         </Panou>
       </ContinutEcran>
       <BaraActiuni>
+        <ButonLegatura href="/concepte/" fel="secundar">
+          Graful de concepte
+        </ButonLegatura>
         <ButonLegatura href="/setari/" fel="secundar">
           Setări
         </ButonLegatura>

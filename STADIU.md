@@ -43,7 +43,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 16 | `lib/rutare-model.ts` + WebLLM + descărcare cu progres și refuz posibil | Terminat | Panoul „Asistent" pe `/stare/`: verifică WebGPU, descarcă cu bară de progres, „Nu acum" nu strică nimic. Ca PGlite, pachetul (~6 MB) nu trece prin Turbopack — `scripts/fa-model-worker.mjs` îl împachetează cu esbuild în `public/vendor/web-llm/`, în afara coajei. Testat cap-coadă în Chrome: descărcare reală (664 MB, ~55s), motor pornit, recunoaște cache-ul la reîncărcare. Modelul ales: Llama-3.2-1B-Instruct-q4f16_1-MLC. |
 | 17 | Degradarea completă fără model, testată prin dezactivare | Terminat | Nicio altă bucată de cod în afară de `lib/rutare-model.ts`, `rutare-model.worker.ts` și `app/stare/page.tsx` nu atinge WebGPU sau modelul. Testat cu „Nu acum" apăsat: curs, lecție, exercițiu Python rulat cu Pyodide, verdict și XP — totul mecanic, 42 XP câștigate fără model. Starea „fără WebGPU" e verificată din cod (o comparație simplă), nu testată pe hardware real fără el — nu am cum să dezactivez WebGPU-ul fără să repornesc Chrome. |
 | 18 | Import PDF → chunk-uri → embeddings | Terminat | Ecranul `/import/`, legat din Setări. Migrarea 0007 aduce `material` și `chunk` (`embedding` jsonb, 384 de numere — Î-12 decisă). `pdf.js` și `@huggingface/transformers` merg ca fișiere statice, ca PGlite și WebLLM — `scripts/fa-embeddinguri-worker.mjs` și o extindere la `copiaza-vendor.mjs`. Nu cere WebGPU. Testat cap-coadă în Chrome cu un PDF real: text extras, bucată scrisă, embedding calculat. Graful de concepte și legarea de curs vin la pașii 19-20 — deocamdată bucățile doar stau în bază. |
-| 19 | Graful de concepte + detectarea lacunelor + marcarea provenienței | Neinceput | |
+| 19 | Graful de concepte + detectarea lacunelor + marcarea provenienței | Terminat | Ecranul `/concepte/`, legat din „Materialul tău". Migrarea 0008 aduce `concept` și `concept_leg`. Fiecare bucată trece prin model (JSON cu schemă, prin `response_format` din WebLLM), iar dependențele fără concept propriu devin lacune, completate de model și marcate „⚠️ completat de mine — profesorul n-a acoperit asta" (`PLAN.md` §6, cuvintele exacte). Testat cap-coadă cu modelul real: mecanismul merge, dar calitatea unui model de 1B e slabă — halucinează des, inventează concepte fără legătură cu textul. E limita acceptată a unui model mic (`PLAN.md` §12), nu un bug de reparat aici. |
 | 20 | Generarea incrementală a cursului propriu | Neinceput | |
 | 21 | Chatul cu asistentul + extragerea faptelor în memorie | Neinceput | |
 | 22 | Ecranul de memorie, vizibil și editabil | Neinceput | |
@@ -84,6 +84,12 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   tot (motorul Postgres nu mai pornea nici măcar în afara aplicației). S-a
   recuperat prin ștergerea bazei din `IndexedDB` — fără copie de progres la
   îndemână, ar fi fost pierdere reală.
+- **O bucată din care modelul n-a scos niciun concept rămâne „neprocesată"
+  pe veci.** `bucatiNeprocesate` (`lib/import/concepte.ts`) hotărăște după
+  dacă există un rând de `concept` cu `chunk_id`-ul ei — o bucată cu răspuns
+  gol nu capătă niciodată unul, deci fiecare „Construiește graful" o reia,
+  degeaba. Nu strică nimic, doar pierde timp; de reparat cu un steag propriu
+  pe `chunk` când chiar contează viteza.
 - **Exportul are ~48 MB**: ~17 MB PGlite, ~13 MB Pyodide, restul WASM
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie. Pentru instalare nu mai cântărește

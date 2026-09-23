@@ -1,13 +1,13 @@
 /**
  * Schema de date, după `PLAN.md` §11. Nume în română fără diacritice.
  *
- * Tabelele pentru asistent (`concept`, `concept_leg`, `memorie`,
- * `conversatie`) vin cu migrarea lor mai încolo în faza 3. `material` și
- * `chunk` vin la pasul 18: `embedding` e `jsonb`, nu un tip de vector — PGlite
- * 0.5.8 n-are extensia `pgvector` (`PLAN.md` §15, Î-12, acum decis: 384 de
- * numere, din `Xenova/all-MiniLM-L6-v2`). Cu câte materiale importă un
- * singur utilizator, o comparare în JS peste toate rândurile e destul —
- * pgvector se adaugă dacă vreodată devine încet.
+ * Tabelele pentru asistent (`memorie`, `conversatie`) vin cu migrarea lor mai
+ * încolo în faza 3. `material` și `chunk` vin la pasul 18: `embedding` e
+ * `jsonb`, nu un tip de vector — PGlite 0.5.8 n-are extensia `pgvector`
+ * (`PLAN.md` §15, Î-12, acum decis: 384 de numere, din
+ * `Xenova/all-MiniLM-L6-v2`). Cu câte materiale importă un singur utilizator,
+ * o comparare în JS peste toate rândurile e destul — pgvector se adaugă dacă
+ * vreodată devine încet. `concept` și `concept_leg` vin la pasul 19.
  */
 import {
   boolean,
@@ -143,6 +143,37 @@ export const chunk = pgTable("chunk", {
   embedding: jsonb("embedding"),
 });
 
+/**
+ * Un concept atomic, extras din bucăți de model — pasul 19. `chunkId` lipsește
+ * pentru conceptele de lacună: modelul le-a scris singur, fiindcă apar ca
+ * dependență dar niciun `chunk` nu le acoperă (`PLAN.md` §6).
+ */
+export const concept = pgTable("concept", {
+  id: serial("id").primaryKey(),
+  materieId: integer("materie_id")
+    .notNull()
+    .references(() => materie.id),
+  nume: text("nume").notNull(),
+  descriere: text("descriere"),
+  // 'material' — extras dintr-o bucată; 'model' — lacună, scrisă de model.
+  provenienta: text("provenienta").notNull().default("material"),
+  chunkId: integer("chunk_id").references(() => chunk.id),
+});
+
+/** O muchie a grafului: `conceptId` nu se face fără `dependeDeId` întâi. */
+export const conceptLeg = pgTable(
+  "concept_leg",
+  {
+    conceptId: integer("concept_id")
+      .notNull()
+      .references(() => concept.id),
+    dependeDeId: integer("depinde_de_id")
+      .notNull()
+      .references(() => concept.id),
+  },
+  (t) => [unique("concept_leg_unica").on(t.conceptId, t.dependeDeId)],
+);
+
 // —— Progresul ————————————————————————————————————————————————
 
 export const progresNivel = pgTable("progres_nivel", {
@@ -185,8 +216,9 @@ export const xpTotal = pgTable("xp_total", {
 });
 
 export const stapanire = pgTable("stapanire", {
-  // Fără cheie străină încă: `concept` vine în faza 3.
-  conceptId: integer("concept_id").primaryKey(),
+  conceptId: integer("concept_id")
+    .primaryKey()
+    .references(() => concept.id),
   stabilitate: integer("stabilitate").notNull().default(0),
   dificultate: integer("dificultate").notNull().default(0),
   urmatoareaVerificare: timestamp("urmatoarea_verificare", {
