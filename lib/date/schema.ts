@@ -1,8 +1,7 @@
 /**
  * Schema de date, după `PLAN.md` §11. Nume în română fără diacritice.
  *
- * Tabelele pentru asistent (`memorie`, `conversatie`) vin cu migrarea lor mai
- * încolo în faza 3. `material` și `chunk` vin la pasul 18: `embedding` e
+ * `material` și `chunk` vin la pasul 18: `embedding` e
  * `jsonb`, nu un tip de vector — PGlite 0.5.8 n-are extensia `pgvector`
  * (`PLAN.md` §15, Î-12, acum decis: 384 de numere, din
  * `Xenova/all-MiniLM-L6-v2`). Cu câte materiale importă un singur utilizator,
@@ -258,3 +257,32 @@ export const setari = pgTable(
   },
   (t) => [unique("setari_rand_unic").on(t.id)],
 );
+
+// —— Asistentul ———————————————————————————————————————————————
+
+/**
+ * Istoricul conversației cu asistentul — pasul 21. O singură conversație, nu
+ * una per curs (`PLAN.md` §11): asistentul e o unealtă, nu ține fire separate.
+ */
+export const conversatie = pgTable("conversatie", {
+  id: serial("id").primaryKey(),
+  // 'utilizator' | 'asistent'
+  rol: text("rol").notNull(),
+  text: text("text").notNull(),
+  creatLa: timestamp("creat_la", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Fapte extrase din conversație, în fundal — doar ce schimbă conținutul
+ * (`CLAUDE.md` regula 10, `PLAN.md` §9): facultate, examen, materii făcute,
+ * lungimea sesiunilor. Niciodată stări emoționale. `stersLa` în loc de
+ * `DELETE`: rândul rămâne, ca să nu fie reextras imediat din aceeași
+ * conversație — ecranul de la pasul 22 îl arată ca șters, nu-l ascunde de tot.
+ */
+export const memorie = pgTable("memorie", {
+  id: serial("id").primaryKey(),
+  tip: text("tip").notNull(),
+  continut: text("continut").notNull(),
+  creatLa: timestamp("creat_la", { withTimezone: true }).notNull().defaultNow(),
+  stersLa: timestamp("sters_la", { withTimezone: true }),
+});

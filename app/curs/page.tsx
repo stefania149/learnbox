@@ -218,6 +218,9 @@ function EcranCurs() {
         <ButonLegatura href="/python/" fel="secundar">
           Scrie cod liber
         </ButonLegatura>
+        <ButonLegatura href="/asistent/" fel="secundar">
+          Asistent
+        </ButonLegatura>
         <ButonLegatura href="/" fel="secundar">
           Înapoi
         </ButonLegatura>

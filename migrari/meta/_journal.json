@@ -64,6 +64,13 @@
       "when": 1790146402869,
       "tag": "0008_graful_de_concepte",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790163652880,
+      "tag": "0009_asistentul",
+      "breakpoints": true
     }
   ]
 }

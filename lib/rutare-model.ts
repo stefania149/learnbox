@@ -78,6 +78,25 @@ export function motorPornit(): Pornire | null {
   return glob[CHEIE] ?? null;
 }
 
+const CHEIE_COADA = Symbol.for("tutore.model.coada");
+const globCoada = globalThis as { [CHEIE_COADA]?: Promise<unknown> };
+
+/**
+ * Motorul e o singură resursă, împărțită de tot ce cere ceva de la model —
+ * chatul și extragerea de fapte în fundal (pasul 21), graful de concepte,
+ * generarea cursului. Două cereri lăsate să plece deodată pe același motor
+ * pot să-l strice: găsit la testare, un chat trimis cât extragerea din
+ * schimbul anterior încă rula a dat `ModelNotLoadedError` la a treia
+ * întrebare. Toate cererile trec printr-o coadă unică, deci a doua așteaptă
+ * întâi rezultatul primei, chiar dacă a pornit „în fundal".
+ */
+export function ruleazaPeModel<T>(sarcina: () => Promise<T>): Promise<T> {
+  const dupaCoada = (globCoada[CHEIE_COADA] ?? Promise.resolve()).catch(() => {});
+  const rezultat = dupaCoada.then(sarcina);
+  globCoada[CHEIE_COADA] = rezultat.catch(() => {});
+  return rezultat;
+}
+
 async function porneste(
   onProgres?: (r: RaportProgres) => void,
 ): Promise<MLCEngineInterface> {
