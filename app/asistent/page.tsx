@@ -263,6 +263,9 @@ export default function EcranAsistent() {
         ) : null}
       </ContinutEcran>
       <BaraActiuni>
+        <ButonLegatura href="/memorie/" fel="secundar">
+          Memorie
+        </ButonLegatura>
         <ButonLegatura href="/" fel="secundar">
           Înapoi
         </ButonLegatura>

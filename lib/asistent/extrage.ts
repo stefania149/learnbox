@@ -21,6 +21,15 @@ export const TIPURI_FAPT = [
 ] as const;
 export type TipFapt = (typeof TIPURI_FAPT)[number];
 
+/** Eticheta de pe ecran pentru fiecare categorie — pasul 22. */
+export const ETICHETA_TIP: Record<TipFapt, string> = {
+  facultate: "Facultate",
+  examen: "Examen",
+  materie_facuta: "Materie făcută",
+  lungime_sesiune: "Lungimea sesiunii",
+  exemplu_clar: "Exemplu clar",
+};
+
 const SCHEMA_FAPTE = {
   type: "object",
   properties: {

@@ -6,7 +6,7 @@
  * ecran. Memoria reține numai fapte care schimbă conținutul (`CLAUDE.md`
  * regula 10) — extragerea lor stă în `lib/asistent/extrage.ts`.
  */
-import { asc, isNull } from "drizzle-orm";
+import { asc, eq, isNull } from "drizzle-orm";
 import { deschideBaza } from "./client";
 import { conversatie, memorie } from "./schema";
 
@@ -38,4 +38,14 @@ export async function faptele(): Promise<Fapt[]> {
 export async function adaugaFaptul(tip: string, continut: string): Promise<void> {
   const { baza } = await deschideBaza();
   await baza.insert(memorie).values({ tip, continut });
+}
+
+/**
+ * Ștergerea unui fapt — pasul 22 (`PLAN.md` §9: „vizibilă și editabilă",
+ * `CLAUDE.md` regula 10). `stersLa`, nu `DELETE`: rândul rămâne, ca să nu fie
+ * reextras imediat din aceeași conversație (`lib/date/schema.ts`).
+ */
+export async function stergeFaptul(id: number): Promise<void> {
+  const { baza } = await deschideBaza();
+  await baza.update(memorie).set({ stersLa: new Date() }).where(eq(memorie.id, id));
 }
