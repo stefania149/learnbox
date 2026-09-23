@@ -44,7 +44,7 @@ GitHub Pages. **Aici e linia de demo.**
 | 17 | Degradarea completă fără model, testată prin dezactivare | Terminat | Nicio altă bucată de cod în afară de `lib/rutare-model.ts`, `rutare-model.worker.ts` și `app/stare/page.tsx` nu atinge WebGPU sau modelul. Testat cu „Nu acum" apăsat: curs, lecție, exercițiu Python rulat cu Pyodide, verdict și XP — totul mecanic, 42 XP câștigate fără model. Starea „fără WebGPU" e verificată din cod (o comparație simplă), nu testată pe hardware real fără el — nu am cum să dezactivez WebGPU-ul fără să repornesc Chrome. |
 | 18 | Import PDF → chunk-uri → embeddings | Terminat | Ecranul `/import/`, legat din Setări. Migrarea 0007 aduce `material` și `chunk` (`embedding` jsonb, 384 de numere — Î-12 decisă). `pdf.js` și `@huggingface/transformers` merg ca fișiere statice, ca PGlite și WebLLM — `scripts/fa-embeddinguri-worker.mjs` și o extindere la `copiaza-vendor.mjs`. Nu cere WebGPU. Testat cap-coadă în Chrome cu un PDF real: text extras, bucată scrisă, embedding calculat. Graful de concepte și legarea de curs vin la pașii 19-20 — deocamdată bucățile doar stau în bază. |
 | 19 | Graful de concepte + detectarea lacunelor + marcarea provenienței | Terminat | Ecranul `/concepte/`, legat din „Materialul tău". Migrarea 0008 aduce `concept` și `concept_leg`. Fiecare bucată trece prin model (JSON cu schemă, prin `response_format` din WebLLM), iar dependențele fără concept propriu devin lacune, completate de model și marcate „⚠️ completat de mine — profesorul n-a acoperit asta" (`PLAN.md` §6, cuvintele exacte). Testat cap-coadă cu modelul real: mecanismul merge, dar calitatea unui model de 1B e slabă — halucinează des, inventează concepte fără legătură cu textul. E limita acceptată a unui model mic (`PLAN.md` §12), nu un bug de reparat aici. |
-| 20 | Generarea incrementală a cursului propriu | Neinceput | |
+| 20 | Generarea incrementală a cursului propriu | Terminat | Ecranul `/genereaza/`, legat din „Graful de concepte". Conceptele se așază topologic (Kahn, cu tăiere de cicluri) și fiecare devine o lecție cu un exercițiu: `solutie` și `apeluri` vin de la model, dar `asteptat` se scoate din rularea reală în Pyodide (principiul 1) — un exercițiu la care codul inițial trece deja cazurile se aruncă, nu se salvează. Incrementală și reluabilă: planul se vede imediat, lecțiile gata se sar. Testat cap-coadă cu modelul real, pe conceptele scoase la pasul 19: „1 lecție nouă, 13 s-au sărit" — nu un bug al pasului 20, ci consecința celor 13 concepte fiind ele însele halucinate la extragere. Lecția generată („funtie") a fost jucată integral din interfață: briefing, exercițiu, 3 cazuri trecute, 39 XP la încercarea aia. Un bug găsit și reparat pe drum: promptul avea un exemplu literal („dublu(3)") pe care modelul îl copia ca nume de funcție în loc să folosească numele lui — scos din prompt, plus filtrare defensivă în cod după numele real din `cod`. |
 | 21 | Chatul cu asistentul + extragerea faptelor în memorie | Neinceput | |
 | 22 | Ecranul de memorie, vizibil și editabil | Neinceput | |
 | 23 | Personalizarea exercițiilor din memorie | Neinceput | |
@@ -160,6 +160,10 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   ecranele nu scriu culori. Tema „terminal" s-a întins peste toată aplicația
   schimbând numai valorile din fișierul ăla și rama din `componente/ecran.tsx`
   — proba principiului 9. Sistemul de teme ca date vine la pasul 24.
+- **Planul din `/genereaza/` nu se actualizează per lecție.** Lista arată „gata"
+  abia după ce se termină tot lotul, nu pe măsură ce fiecare concept își capătă
+  lecția — nu strică nimic, doar nu dă un semnal intermediar la o generare
+  lungă.
 - **Trei culori scrise ca text, în afara tokenurilor.** Manifestul PWA și cele
   două iconițe SVG sunt citite de sistemul de operare înainte să existe CSS,
   deci au fosforul și lemnul scrise în hex. La o temă nouă se schimbă de mână,

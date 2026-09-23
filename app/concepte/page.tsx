@@ -273,6 +273,7 @@ export default function EcranConcepte() {
         </Panou>
       </ContinutEcran>
       <BaraActiuni>
+        <ButonLegatura href="/genereaza/">Generează cursul</ButonLegatura>
         <ButonLegatura href="/import/" fel="secundar">
           Materialul tău
         </ButonLegatura>

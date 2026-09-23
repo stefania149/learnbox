@@ -16,11 +16,11 @@ import { capitol, exercitiu, materie, nivel, test } from "./schema";
 import {
   cursLivrat,
   CURS_IMPLICIT,
+  CURS_PROPRIU,
   type CheieCurs,
 } from "@/lib/continut/livrate";
 import type {
   CapitolLivrat,
-  CursLivrat,
   EcranBriefing,
   IntrebareTest,
   TestLivrat,
@@ -258,10 +258,50 @@ async function asazaCapitolul(
   await asazaTestul({ capitolId: cap.id }, livrat.test);
 }
 
+/**
+ * Materia proprie (pasul 20) — una singură, cea pe care o umple graful de
+ * concepte (`lib/import/concepte.ts`). Nu vine dintr-un fișier, deci `asaza`
+ * n-are ce citi sau valida; doar găsește rândul, sau îl face dacă lipsește.
+ */
+async function materiaProprieRand() {
+  const { baza } = await deschideBaza();
+  const gasita = await baza
+    .select()
+    .from(materie)
+    .where(eq(materie.sursa, "generat"));
+  if (gasita[0]) return gasita[0];
+
+  const [noua] = await baza
+    .insert(materie)
+    .values({ nume: "Materialul tău", sursa: "generat" })
+    .returning();
+  return noua;
+}
+
+/** `id`-ul materiei proprii, creând-o dacă e prima dată. */
+export async function materiaProprie(): Promise<number> {
+  return (await materiaProprieRand()).id;
+}
+
+/** `id`-ul materiei proprii, sau `null` dacă n-a fost creată încă — nu inventă una. */
+export async function materiaProprieDacaExista(): Promise<number | null> {
+  const { baza } = await deschideBaza();
+  const gasita = await baza
+    .select()
+    .from(materie)
+    .where(eq(materie.sursa, "generat"));
+  return gasita[0]?.id ?? null;
+}
+
 async function asaza(cheieCurs: CheieCurs): Promise<{
   materieId: number;
-  curs: CursLivrat;
+  curs: { materie: string };
 }> {
+  if (cheieCurs === CURS_PROPRIU) {
+    const rand = await materiaProprieRand();
+    return { materieId: rand.id, curs: { materie: rand.nume } };
+  }
+
   const curs = await cursLivrat(cheieCurs);
   const materieId = await idMaterie(curs.materie);
   let ordine = 0;
@@ -276,7 +316,7 @@ async function asaza(cheieCurs: CheieCurs): Promise<{
  * O dată pe încărcarea filei. Așezarea e idempotentă, dar n-are rost s-o
  * refacem la fiecare ecran.
  */
-const inLucru = new Map<string, Promise<{ materieId: number; curs: CursLivrat }>>();
+const inLucru = new Map<string, Promise<{ materieId: number; curs: { materie: string } }>>();
 
 function odataPePagina(cheieCurs: CheieCurs) {
   const deja = inLucru.get(cheieCurs);

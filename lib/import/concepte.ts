@@ -12,7 +12,8 @@
  */
 import { eq, inArray, isNotNull } from "drizzle-orm";
 import { deschideBaza } from "@/lib/date/client";
-import { chunk, concept, conceptLeg, materie } from "@/lib/date/schema";
+import { chunk, concept, conceptLeg } from "@/lib/date/schema";
+import { materiaProprie, materiaProprieDacaExista } from "@/lib/date/seminte";
 import { descarcaModelul, motorPornit } from "@/lib/rutare-model";
 import type { MLCEngineInterface } from "@mlc-ai/web-llm";
 
@@ -111,31 +112,6 @@ async function explicaLacuna(motor: MLCEngineInterface, nume: string): Promise<s
   return raspuns.choices[0]?.message?.content?.trim() || nume;
 }
 
-/** Materia generată din materialul tău — una singură, reluată la fiecare import. */
-async function materiaGenerata(): Promise<number> {
-  const { baza } = await deschideBaza();
-  const gasita = await baza
-    .select()
-    .from(materie)
-    .where(eq(materie.sursa, "generat"));
-  if (gasita[0]) return gasita[0].id;
-
-  const [noua] = await baza
-    .insert(materie)
-    .values({ nume: "Materialul tău", sursa: "generat" })
-    .returning();
-  return noua.id;
-}
-
-async function materiaGenerataDacaExista(): Promise<number | null> {
-  const { baza } = await deschideBaza();
-  const gasita = await baza
-    .select()
-    .from(materie)
-    .where(eq(materie.sursa, "generat"));
-  return gasita[0]?.id ?? null;
-}
-
 /** Bucățile care încă n-au dat naștere niciunui concept. */
 async function bucatiNeprocesate() {
   const { baza } = await deschideBaza();
@@ -160,7 +136,7 @@ export async function construiesteGraful(
   const motor = await motorPornirii;
 
   const { baza } = await deschideBaza();
-  const materieId = await materiaGenerata();
+  const materieId = await materiaProprie();
   const bucati = await bucatiNeprocesate();
 
   const existente = await baza
@@ -233,7 +209,7 @@ export async function construiesteGraful(
 
 export async function citesteGraful(): Promise<ConceptCitit[]> {
   const { baza } = await deschideBaza();
-  const materieId = await materiaGenerataDacaExista();
+  const materieId = await materiaProprieDacaExista();
   if (materieId === null) return [];
 
   const concepte = await baza

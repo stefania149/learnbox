@@ -11,7 +11,17 @@
 
 /** Cheia fișierului: `public/cursuri/<cheie>.json`. */
 export const CURSURI_LIVRATE = ["python", "sql"] as const;
-export type CheieCurs = (typeof CURSURI_LIVRATE)[number];
+export type CheieCursLivrat = (typeof CURSURI_LIVRATE)[number];
 
 /** Cursul cu care se pornește când adresa nu spune altul. */
-export const CURS_IMPLICIT: CheieCurs = "python";
+export const CURS_IMPLICIT: CheieCursLivrat = "python";
+
+/**
+ * Cursul generat din materialul tău — pasul 20. Nu vine din `public/cursuri/`,
+ * ci direct din bază (`materie.sursa = 'generat'`), deci nu intră în
+ * `CURSURI_LIVRATE`: uneltele de la build (`fa-rezumatul.mjs`) ar căuta un
+ * fișier care nu există.
+ */
+export const CURS_PROPRIU = "propriu" as const;
+
+export type CheieCurs = CheieCursLivrat | typeof CURS_PROPRIU;

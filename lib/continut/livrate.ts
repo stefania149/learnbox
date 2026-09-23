@@ -10,13 +10,14 @@
  * pentru trei rânduri.
  */
 import { citesteCurs, type CursLivrat } from "./format";
-import { CURSURI_LIVRATE, CURS_IMPLICIT, type CheieCurs } from "./cursuri";
+import { CURSURI_LIVRATE, CURS_IMPLICIT, CURS_PROPRIU, type CheieCurs } from "./cursuri";
 
 const baza = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export {
   CURSURI_LIVRATE,
   CURS_IMPLICIT,
+  CURS_PROPRIU,
   type CheieCurs,
 } from "./cursuri";
 
@@ -24,9 +25,11 @@ export {
  * Cursul ales stă în adresă (`/curs/?curs=sql`), nu în bază: o adresă spune
  * întreg unde ești, se poate pune la favorite, iar butonul „înapoi" face ce
  * trebuie. Ce vine din adresă e text de la cine vrea, deci se verifică.
- * Vezi `PLAN.md` Î-20.
+ * Vezi `PLAN.md` Î-20. `propriu` (pasul 20) nu vine din fișier — vine direct
+ * din bază, deci se acceptă separat de lista celor livrate.
  */
 export function cheieCursului(v: string | null | undefined): CheieCurs {
+  if (v === CURS_PROPRIU) return CURS_PROPRIU;
   return (CURSURI_LIVRATE as readonly string[]).includes(v ?? "")
     ? (v as CheieCurs)
     : CURS_IMPLICIT;
