@@ -32,4 +32,8 @@ export const migrari: Migrare[] = [
     nume: "0006_testele.sql",
     sql: "ALTER TABLE \"test\" ADD COLUMN \"cheie\" text;--> statement-breakpoint\nALTER TABLE \"test\" ADD COLUMN \"titlu\" text;--> statement-breakpoint\nALTER TABLE \"test\" ADD CONSTRAINT \"test_nivel\" UNIQUE(\"nivel_id\");--> statement-breakpoint\nALTER TABLE \"test\" ADD CONSTRAINT \"test_capitol\" UNIQUE(\"capitol_id\");",
   },
+  {
+    nume: "0007_materialul_tau.sql",
+    sql: "CREATE TABLE \"chunk\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"material_id\" integer NOT NULL,\n\t\"text\" text NOT NULL,\n\t\"pagina\" integer NOT NULL,\n\t\"embedding\" jsonb\n);\n--> statement-breakpoint\nCREATE TABLE \"material\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"titlu\" text NOT NULL,\n\t\"fisier\" text NOT NULL,\n\t\"tip\" text DEFAULT 'pdf' NOT NULL,\n\t\"importat_la\" timestamp with time zone DEFAULT now() NOT NULL\n);\n--> statement-breakpoint\nALTER TABLE \"chunk\" ADD CONSTRAINT \"chunk_material_id_material_id_fk\" FOREIGN KEY (\"material_id\") REFERENCES \"public\".\"material\"(\"id\") ON DELETE no action ON UPDATE no action;",
+  },
 ];

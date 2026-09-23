@@ -1,10 +1,13 @@
 /**
  * Schema de date, după `PLAN.md` §11. Nume în română fără diacritice.
  *
- * Tabelele pentru import propriu și pentru asistent (`material`, `chunk`,
- * `concept`, `concept_leg`, `memorie`, `conversatie`) vin cu migrarea lor în
- * faza 3: `chunk.embedding` cere o dimensiune de vector pe care n-am ales-o
- * încă (vezi `PLAN.md` §15, Î-12).
+ * Tabelele pentru asistent (`concept`, `concept_leg`, `memorie`,
+ * `conversatie`) vin cu migrarea lor mai încolo în faza 3. `material` și
+ * `chunk` vin la pasul 18: `embedding` e `jsonb`, nu un tip de vector — PGlite
+ * 0.5.8 n-are extensia `pgvector` (`PLAN.md` §15, Î-12, acum decis: 384 de
+ * numere, din `Xenova/all-MiniLM-L6-v2`). Cu câte materiale importă un
+ * singur utilizator, o comparare în JS peste toate rândurile e destul —
+ * pgvector se adaugă dacă vreodată devine încet.
  */
 import {
   boolean,
@@ -109,6 +112,36 @@ export const test = pgTable(
   },
   (t) => [unique("test_nivel").on(t.nivelId), unique("test_capitol").on(t.capitolId)],
 );
+
+// —— Materialul tău (import propriu) —————————————————————————————
+
+/** Un fișier importat de utilizator — pasul 18. */
+export const material = pgTable("material", {
+  id: serial("id").primaryKey(),
+  titlu: text("titlu").notNull(),
+  // Numele fișierului ales de utilizator, ca să se recunoască în listă.
+  fisier: text("fisier").notNull(),
+  // 'pdf' — singurul deocamdată. Text și imagini vin când au import propriu.
+  tip: text("tip").notNull().default("pdf"),
+  importatLa: timestamp("importat_la", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * O bucată de text dintr-un material, cu locul ei (pagina) și embeddingul ei.
+ * `embedding` e un `jsonb` cu 384 de numere (`Xenova/all-MiniLM-L6-v2`) — vezi
+ * nota de la începutul fișierului.
+ */
+export const chunk = pgTable("chunk", {
+  id: serial("id").primaryKey(),
+  materialId: integer("material_id")
+    .notNull()
+    .references(() => material.id),
+  text: text("text").notNull(),
+  pagina: integer("pagina").notNull(),
+  embedding: jsonb("embedding"),
+});
 
 // —— Progresul ————————————————————————————————————————————————
 

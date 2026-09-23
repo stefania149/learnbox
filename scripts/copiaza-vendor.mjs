@@ -35,6 +35,13 @@ const pachete = [
       /ffi/,
     ],
   },
+  {
+    nume: "pdf.js",
+    sursa: "node_modules/pdfjs-dist/build",
+    destinatie: "public/vendor/pdfjs",
+    // Firul de parsare are nevoie doar de varianta minificată.
+    sari: [...balast, /\.sandbox\./, /(?<!\.min)\.mjs$/],
+  },
 ];
 
 function marime(cale) {

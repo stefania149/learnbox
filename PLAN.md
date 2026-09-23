@@ -520,7 +520,14 @@ Nu e terminat până nu trec toate cinci:
 - **Î-9.** Ce se întâmplă pe telefon? *Provizoriu: PWA-ul merge, dar fără import și fără model. Nu optimizăm la v1.*
 - **Î-10.** Cât e cronometrul pe o rulare de cod? *Provizoriu: 5 secunde. Destul pentru orice exercițiu de curs, scurt cât să nu pară blocaj.*
 - **Î-11.** Se arată cazurile de test înainte de rulare, sau doar după? *Provizoriu: primele două se văd în enunț (ca exemple), restul apar la rulare. Altfel se scrie cod care trece testele fără să rezolve problema.*
-- **Î-12.** Ce dimensiune are vectorul de embedding, și ce model îl produce? Până se decide, tabelele `material`, `chunk`, `concept`, `concept_leg`, `memorie` și `conversatie` nu există în schemă — vin cu migrarea lor în faza 3. *Provizoriu: nedecis.*
+- **Î-12.** ~~Ce dimensiune are vectorul de embedding, și ce model îl produce?~~
+  **Decis, la pasul 18: `Xenova/all-MiniLM-L6-v2`, prin `@huggingface/transformers`
+  — 384 de numere.** Merge prin WASM, nu cere WebGPU, deci nu trece prin
+  `lib/rutare-model.ts`. `embedding` e `jsonb`, nu un tip de vector: PGlite
+  0.5.8 n-are `pgvector`; o comparare în JS peste toate rândurile e destul cât
+  timp un utilizator are zeci-sute de bucăți, nu milioane. `concept`,
+  `concept_leg`, `memorie` și `conversatie` rămân nedecise, vin mai încolo în
+  faza 3.
 - **Î-13.** Cum se socotește `nivel_jucator` din XP-ul unei materii? Până se decide, rămâne `1` și nu apare pe ecran; XP-ul se adună, atât. *Provizoriu: nedecis.*
 - **Î-14.** Când se consideră terminată o lecție, ca să se deblocheze următoarea? *Provizoriu: când fiecare exercițiu al ei a fost încercat măcar o dată — nu când toate trec. XP-ul măsoară efortul (§8), deci nici deblocarea nu se leagă de corectitudine.*
 - **Î-15.** Unde stau evenimentele de XP care nu sunt încercări — briefingul citit și bonusul de revenire? (Testele au intrat în `incercare`, cu `test_id`, la pasul 14, deci au istoric ca exercițiile.) §11 n-are loc pentru ele, fiindcă `incercare` cere un exercițiu sau un test. *Provizoriu: doar în totaluri (`xp_total`, `progres_nivel.xp_obtinut`), cu două steaguri în schemă (`progres_nivel.briefing_citit`, `setari.vazut_ultima_data`). Un tabel `eveniment_xp` se adaugă dacă Arhiva are nevoie de istoric.*

@@ -132,6 +132,9 @@ export default function EcranSetari() {
         <ButonLegatura href="/stare/" fel="secundar">
           Aplicația
         </ButonLegatura>
+        <ButonLegatura href="/import/" fel="secundar">
+          Materialul tău
+        </ButonLegatura>
       </BaraActiuni>
     </Ecran>
   );
