@@ -14,10 +14,12 @@ import { mesajEroare } from "@/lib/date/erori";
 import {
   citesteSetari,
   scrieRegistruTon,
+  scrieTemaActiva,
   REGISTRE_TON,
   type RegistruTon,
   type Setari,
 } from "@/lib/date/setari";
+import { TEME } from "@/lib/teme/teme";
 
 type Stare =
   | { fel: "se-incarca" }
@@ -60,6 +62,22 @@ export default function EcranSetari() {
     }
   }
 
+  async function alegeTema(valoare: string) {
+    setSeScrie(true);
+    // Vizibil imediat, nu doar după ce scrie baza de date — o temă se simte
+    // schimbată pe loc, nu „la reîncărcare" (spre deosebire de ton, mai jos).
+    document.documentElement.dataset.tema = valoare;
+    try {
+      const noi = await scrieTemaActiva(valoare);
+      setStare({ fel: "gata", setari: noi });
+      setSalvatLa(new Date());
+    } catch (e) {
+      setStare({ fel: "eroare", mesaj: mesajEroare(e) });
+    } finally {
+      setSeScrie(false);
+    }
+  }
+
   return (
     <Ecran>
       <AntetEcran
@@ -96,6 +114,24 @@ export default function EcranSetari() {
         {stare.fel === "gata" ? (
           <Panou>
             <GrupAlegere
+              legenda="Temă"
+              ajutor="Cum arată tot jocul. Se schimbă pe loc, pe orice ecran."
+            >
+              {TEME.map((tema) => (
+                <Alegere
+                  key={tema.id}
+                  nume="tema-activa"
+                  valoare={tema.id}
+                  titlu={tema.nume}
+                  explicatie={tema.explicatie}
+                  aleasa={stare.setari.temaActiva === tema.id}
+                  dezactivata={seScrie}
+                  onAlege={alegeTema}
+                />
+              ))}
+            </GrupAlegere>
+
+            <GrupAlegere
               legenda="Ton"
               ajutor="Cum îți răspunde jocul când termini ceva. Se schimbă oricând."
             >
@@ -116,7 +152,7 @@ export default function EcranSetari() {
               {seScrie
                 ? "Se scrie…"
                 : salvatLa
-                  ? `Salvat la ${salvatLa.toLocaleTimeString("ro-RO")}. Reîncarcă pagina — alegerea rămâne.`
+                  ? `Salvat la ${salvatLa.toLocaleTimeString("ro-RO")}.`
                   : "Alegerea se salvează în clipa în care o faci."}
             </p>
           </Panou>

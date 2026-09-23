@@ -5,6 +5,7 @@
 import { eq } from "drizzle-orm";
 import { deschideBaza } from "./client";
 import { setari } from "./schema";
+import { temaValida, type Tema } from "@/lib/teme/teme";
 
 export const REGISTRE_TON = [
   {
@@ -63,6 +64,18 @@ export async function scrieModelDescarcat() {
   const scrise = await baza
     .update(setari)
     .set({ modelDescarcat: true })
+    .where(eq(setari.id, 1))
+    .returning();
+  return scrise[0];
+}
+
+/** Tema aleasă — pasul 24. Un `id` din afara listei se prinde la implicită. */
+export async function scrieTemaActiva(tema: string) {
+  const { baza } = await deschideBaza();
+  await citesteSetari();
+  const scrise = await baza
+    .update(setari)
+    .set({ temaActiva: temaValida(tema) satisfies Tema })
     .where(eq(setari.id, 1))
     .returning();
   return scrise[0];

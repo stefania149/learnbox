@@ -53,7 +53,7 @@ GitHub Pages. **Aici e linia de demo.**
 
 | # | Pas | Status | Notițe |
 |---|---|---|---|
-| 24 | Sistemul de teme ca date + tokenuri | Neinceput | |
+| 24 | Sistemul de teme ca date + tokenuri | Terminat | Temele sunt un selector `[data-tema="..."]` peste aceleași nume de tokenuri (`app/globals.css`); `componente/tema.tsx` pune atributul pe `<html>`, citit din `setari.tema_activa`. Nicio componentă nu s-a atins ca să adauge a doua temă — testul principiului 9. Doi picker în `/setari/`: „Sobră" (nouă, implicită — gri neutru, accent albastru, colțuri mai mici) și „Terminal" (paleta de până acum, redenumită). Comutarea e instant, fără reîncărcare. Testat cap-coadă: schimbat live pe `/setari/`, verificat propagarea pe `/curs/` și `/profil/`, persistă după reîncărcare. Un bug găsit și reparat: un bloc `:root { --tema-dulap-*: ... }` rămas neșters din refactorizare aplica mereu paleta terminal peste `/profil/`, indiferent de tema aleasă — `:root` fiind neconditionat, câștiga cascada în fața `[data-tema="sobra"]`. Cele două teme rămase din §10 („caldă", „minimalistă") și tema implicită per curs vin la pasul 25. |
 | 25 | Cele patru teme + tema implicită per curs | Neinceput | |
 | 26 | Reacția mascotei la zero XP + cele trei registre de ton | Neinceput | |
 | 27 | Răspunsuri libere cu rubrică, pentru materiile fără execuție | Neinceput | Partea care poate eșua — vezi `PLAN.md` §13 |

@@ -39,11 +39,11 @@ function Dunga() {
       aria-hidden
       className="flex h-2 w-full max-w-sm overflow-hidden rounded-full"
     >
-      <span className="flex-1 bg-retro-dunga-1" />
-      <span className="flex-1 bg-retro-dunga-2" />
-      <span className="flex-1 bg-retro-dunga-3" />
-      <span className="flex-1 bg-retro-dunga-4" />
-      <span className="flex-1 bg-retro-dunga-5" />
+      <span className="flex-1 bg-dunga-1" />
+      <span className="flex-1 bg-dunga-2" />
+      <span className="flex-1 bg-dunga-3" />
+      <span className="flex-1 bg-dunga-4" />
+      <span className="flex-1 bg-dunga-5" />
     </span>
   );
 }

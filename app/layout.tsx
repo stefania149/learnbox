@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { InregistrareServiceWorker } from "@/componente/pwa";
+import { AplicaTema } from "@/componente/tema";
 
 const descriere =
   "Un joc de învățat, care rulează întreg în browser: Python, exerciții cu " +
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ro" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <AplicaTema />
         {children}
         <InregistrareServiceWorker />
       </body>
