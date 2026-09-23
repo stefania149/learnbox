@@ -74,6 +74,16 @@ Limitări de prototip, de reparat înainte de a considera produsul gata.
   în `public/vendor/` la fiecare build, fiindcă Turbopack fie pierde legătura
   către `instantiateWasm`, fie (cu `transpilePackages`) bagă cod care cere
   `window` în worker. De reîncercat la o versiune viitoare de Next.
+- **PGlite se blochează dacă o filă moartă rămâne „lider".** Motorul alege un
+  singur fir lider între toate filele deschise pe același origin, printr-un
+  `navigator.locks`; dacă fila liderului e înghețată de Chrome pe fundal, cele
+  noi așteaptă degeaba și cad pe cronometrul de 30s. Fixul e să închizi Chrome
+  de tot, nu doar tab-ul — o filă restaurată la redeschidere poate relua
+  blocajul. **Nu se umblă la lacăt cu `{steal: true}`**: încercat o dată, a
+  pornit doi „lideri" deodată, scriind peste aceeași bază, și a stricat-o de
+  tot (motorul Postgres nu mai pornea nici măcar în afara aplicației). S-a
+  recuperat prin ștergerea bazei din `IndexedDB` — fără copie de progres la
+  îndemână, ar fi fost pierdere reală.
 - **Exportul are ~48 MB**: ~17 MB PGlite, ~13 MB Pyodide, restul WASM
   necomprimat. Se servește comprimat, dar merită văzut dacă se pot scoate
   extensiile Postgres nefolosite din copie. Pentru instalare nu mai cântărește
