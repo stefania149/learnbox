@@ -65,17 +65,36 @@ function normalizeaza(text: string): string {
   return text.trim().toLowerCase();
 }
 
-/** Cuvintele de peste 3 litere dintr-un text, pentru verificarea de mai jos. */
+/**
+ * Cuvinte românești atât de comune încât apar în aproape orice propoziție —
+ * „este", „care", „sunt" ies din orice text de peste câteva rânduri. Fără
+ * lista asta, verificarea de mai jos „găsește" ancoră peste tot și nu
+ * respinge nimic (văzut la testare: un fapt inventat a trecut doar fiindcă
+ * amândouă textele conțineau „este").
+ */
+const CUVINTE_COMUNE = new Set([
+  "este", "sunt", "care", "unei", "unui", "fost", "doar", "deja", "pentru",
+  "acest", "această", "aceasta", "acesta", "foarte", "poate", "dintr",
+  "avea", "fără", "după", "când", "unde", "cum", "mult", "mai", "tot",
+  "toate", "toți", "nici", "dacă", "atunci", "prin", "către", "spre",
+  "între", "asupra", "despre", "lângă", "fiecare", "orice", "oricare",
+  "altfel", "decât", "însă", "deci", "iar", "chiar", "poți", "vrei",
+  "știu", "știi", "spun", "spui", "zice", "zici", "bine", "rău",
+]);
+
+/** Cuvintele de conținut dintr-un text — fără cele din lista de mai sus. */
 function cuvintele(text: string): Set<string> {
-  return new Set(normalizeaza(text).match(/[a-zăâîșț0-9]{4,}/g) ?? []);
+  const toate = normalizeaza(text).match(/[a-zăâîșț0-9]{4,}/g) ?? [];
+  return new Set(toate.filter((c) => !CUVINTE_COMUNE.has(c)));
 }
 
 /**
- * Modelul tinde să copieze descrierile categoriilor din prompt ca și cum ar
- * fi fapte reale, mai ales când conversația n-a atins categoria (văzut la
- * testare: a scos „examen", „materii făcute" din senin, dintr-o întrebare
- * care pomenea doar facultatea). Un fapt care n-are niciun cuvânt comun cu
- * schimbul citit chiar n-a fost spus — se aruncă, la fel ca la pasul 20.
+ * Modelul tinde să copieze descrierile categoriilor din prompt, sau să
+ * inventeze cu totul, ca și cum ar fi fapte reale — văzut la testare de două
+ * ori: o dată copiind categoriile din prompt, o dată completând un șablon cu
+ * text de umplutură ("[numărul de anumători] anumători"). Un fapt care n-are
+ * niciun cuvânt de conținut comun cu schimbul citit chiar n-a fost spus — se
+ * aruncă, la fel ca la pasul 20.
  */
 function ancoratInText(continut: string, sursa: Set<string>): boolean {
   const cuvinteleFaptului = cuvintele(continut);

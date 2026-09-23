@@ -286,3 +286,20 @@ export const memorie = pgTable("memorie", {
   creatLa: timestamp("creat_la", { withTimezone: true }).notNull().defaultNow(),
   stersLa: timestamp("sters_la", { withTimezone: true }),
 });
+
+/**
+ * Enunțul personalizat al unui exercițiu, din faptele memorate — pasul 23
+ * (`PLAN.md` §9). Un rând separat, nu o suprascriere a `exercitiu.enunt`:
+ * `seminte.ts` rescrie enunțul canonic la fiecare așezare a cursului, deci o
+ * personalizare scrisă direct acolo ar dispărea la următoarea încărcare a
+ * filei. Doar contextul poveștii se schimbă (regula 1 rămâne intactă: cazurile
+ * de test și soluția nu se ating aici, deci verdictul nu se schimbă niciodată
+ * din personalizare).
+ */
+export const exercitiuPersonalizat = pgTable("exercitiu_personalizat", {
+  exercitiuId: integer("exercitiu_id")
+    .primaryKey()
+    .references(() => exercitiu.id),
+  enunt: text("enunt").notNull(),
+  creatLa: timestamp("creat_la", { withTimezone: true }).notNull().defaultNow(),
+});

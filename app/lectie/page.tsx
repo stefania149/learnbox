@@ -34,6 +34,13 @@ import {
 } from "@/lib/date/progres";
 import { citesteXpTotal, scrieIncercare } from "@/lib/date/incercari";
 import { evalueaza, RABDARE_MS } from "@/lib/exercitii/motor";
+import { faptele as faptelActive, type Fapt } from "@/lib/date/asistent";
+import {
+  personalizarileLectiei,
+  salveazaPersonalizarea,
+} from "@/lib/date/personalizare";
+import { faptelePotrivite, personalizeazaEnuntul } from "@/lib/asistent/personalizeaza";
+import { motorPornit } from "@/lib/rutare-model";
 
 const NUME_TIP: Record<string, string> = {
   completeaza: "Completează",
@@ -87,6 +94,10 @@ function EcranLectie() {
   const [urmatoarea, setUrmatoarea] = useState<{ id: number; nume: string } | null>(null);
   const [areTest, setAreTest] = useState(false);
   const [xpBriefing, setXpBriefing] = useState(0);
+  const [fapte, setFapte] = useState<Fapt[]>([]);
+  const [personalizari, setPersonalizari] = useState<Record<number, string>>({});
+  const [arataOriginalul, setArataOriginalul] = useState<Set<number>>(new Set());
+  const [sePersonalizeaza, setSePersonalizeaza] = useState<number | null>(null);
 
   useEffect(() => {
     let anulat = false;
@@ -107,6 +118,19 @@ function EcranLectie() {
           lectie.exercitii.map((e) => [e.id, e.codInitial ?? ""]),
         ),
       );
+      // Personalizarea (pasul 23) nu ține jocul în loc: dacă baza n-a răspuns
+      // încă la asta, exercițiul tot arată enunțul lui canonic.
+      Promise.all([
+        faptelActive(),
+        personalizarileLectiei(lectie.exercitii.map((e) => e.id)),
+      ])
+        .then(([f, p]) => {
+          if (!anulat) {
+            setFapte(f);
+            setPersonalizari(p);
+          }
+        })
+        .catch(() => {});
       setFaza(
         briefingul(lectie.nivel).length > 0
           ? { fel: "briefing", ecran: 0 }
@@ -200,6 +224,24 @@ function EcranLectie() {
     }
   }
 
+  async function personalizeaza(exercitiuId: number, enuntOriginal: string) {
+    const pornit = motorPornit();
+    if (!pornit) return;
+    setSePersonalizeaza(exercitiuId);
+    try {
+      const motor = await pornit;
+      const rescris = await personalizeazaEnuntul(motor, enuntOriginal, fapte);
+      if (rescris) {
+        await salveazaPersonalizarea(exercitiuId, rescris);
+        setPersonalizari((v) => ({ ...v, [exercitiuId]: rescris }));
+      }
+    } catch {
+      // Personalizarea e un adaos: dacă n-a mers, exercițiul rămâne cu enunțul lui.
+    } finally {
+      setSePersonalizeaza(null);
+    }
+  }
+
   async function incepePractica() {
     mergiLa({ fel: "practica", indice: 0 });
     if (incarcare.fel !== "gata") return;
@@ -286,7 +328,41 @@ function EcranLectie() {
         />
         <ContinutEcran>
           <Panou titlu={NUME_TIP[ex.tip] ?? ex.tip}>
-            <p>{ex.enunt}</p>
+            <p>
+              {personalizari[ex.id] && !arataOriginalul.has(ex.id)
+                ? personalizari[ex.id]
+                : ex.enunt}
+            </p>
+            {personalizari[ex.id] ? (
+              <>
+                <p className="text-xs text-accent">Personalizat din memorie</p>
+                <div>
+                  <Buton
+                    fel="secundar"
+                    onClick={() =>
+                      setArataOriginalul((v) => {
+                        const nou = new Set(v);
+                        if (nou.has(ex.id)) nou.delete(ex.id);
+                        else nou.add(ex.id);
+                        return nou;
+                      })
+                    }
+                  >
+                    {arataOriginalul.has(ex.id) ? "Arată personalizarea" : "Arată enunțul original"}
+                  </Buton>
+                </div>
+              </>
+            ) : motorPornit() && faptelePotrivite(fapte).length > 0 ? (
+              <div>
+                <Buton
+                  fel="secundar"
+                  onClick={() => void personalizeaza(ex.id, ex.enunt)}
+                  disabled={sePersonalizeaza === ex.id}
+                >
+                  {sePersonalizeaza === ex.id ? "Se personalizează…" : "Personalizează din memorie"}
+                </Buton>
+              </div>
+            ) : null}
           </Panou>
 
           <Panou>

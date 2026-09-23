@@ -44,4 +44,8 @@ export const migrari: Migrare[] = [
     nume: "0009_asistentul.sql",
     sql: "CREATE TABLE \"conversatie\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"rol\" text NOT NULL,\n\t\"text\" text NOT NULL,\n\t\"creat_la\" timestamp with time zone DEFAULT now() NOT NULL\n);\n--> statement-breakpoint\nCREATE TABLE \"memorie\" (\n\t\"id\" serial PRIMARY KEY NOT NULL,\n\t\"tip\" text NOT NULL,\n\t\"continut\" text NOT NULL,\n\t\"creat_la\" timestamp with time zone DEFAULT now() NOT NULL,\n\t\"sters_la\" timestamp with time zone\n);\n",
   },
+  {
+    nume: "0010_personalizarea.sql",
+    sql: "CREATE TABLE \"exercitiu_personalizat\" (\n\t\"exercitiu_id\" integer PRIMARY KEY NOT NULL,\n\t\"enunt\" text NOT NULL,\n\t\"creat_la\" timestamp with time zone DEFAULT now() NOT NULL\n);\n--> statement-breakpoint\nALTER TABLE \"exercitiu_personalizat\" ADD CONSTRAINT \"exercitiu_personalizat_exercitiu_id_exercitiu_id_fk\" FOREIGN KEY (\"exercitiu_id\") REFERENCES \"public\".\"exercitiu\"(\"id\") ON DELETE no action ON UPDATE no action;",
+  },
 ];
