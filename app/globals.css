@@ -287,3 +287,57 @@ body {
   color: var(--tema-text);
   font-family: var(--tema-font);
 }
+
+/* Mascota, la zero XP (pasul 26, `PLAN.md` §8) — formă proprie, animată doar
+   din CSS. Tema „minimalistă" n-are personaj (§10): componenta nu știe ce
+   temă e activă (principiul 9), CSS-ul ăsta o ascunde. */
+@keyframes mascota-sarituri {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+}
+
+.mascota-figura {
+  animation: mascota-sarituri 0.9s ease-in-out infinite;
+}
+
+@keyframes mascota-confetti {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+.mascota-confetti span {
+  animation: mascota-confetti 1s ease-in-out infinite;
+}
+
+.mascota-confetti span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.mascota-confetti span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.mascota-confetti span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.mascota-confetti span:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+[data-tema="minimalista"] .mascota-figura,
+[data-tema="minimalista"] .mascota-confetti {
+  display: none;
+}

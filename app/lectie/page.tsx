@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Ecran,
   AntetEcran,
@@ -12,6 +12,7 @@ import {
 import { Buton, ButonLegatura } from "@/componente/buton";
 import { EditorCod } from "@/componente/editor-cod";
 import { RaportCazuri, type StareRaport } from "@/componente/raport-cazuri";
+import { ReactieZero } from "@/componente/mascota";
 import { mesajEroare } from "@/lib/date/erori";
 import { testulLectiei } from "@/lib/date/teste";
 import {
@@ -41,6 +42,7 @@ import {
 } from "@/lib/date/personalizare";
 import { faptelePotrivite, personalizeazaEnuntul } from "@/lib/asistent/personalizeaza";
 import { motorPornit } from "@/lib/rutare-model";
+import { citesteSetari, type RegistruTon } from "@/lib/date/setari";
 
 const NUME_TIP: Record<string, string> = {
   completeaza: "Completează",
@@ -79,6 +81,7 @@ export default function Pagina() {
 }
 
 function EcranLectie() {
+  const router = useRouter();
   const parametri = useSearchParams();
   const nivelId = Number(parametri.get("nivel"));
   const cheie = cheieCursului(parametri.get("curs"));
@@ -98,6 +101,12 @@ function EcranLectie() {
   const [personalizari, setPersonalizari] = useState<Record<number, string>>({});
   const [arataOriginalul, setArataOriginalul] = useState<Set<number>>(new Set());
   const [sePersonalizeaza, setSePersonalizeaza] = useState<number | null>(null);
+  const [ton, setTon] = useState<RegistruTon>("neutru");
+  // Ce s-a încercat în vizita ASTA, nu în toate — `incercate` ține și
+  // trecutul, iar zero XP (pasul 26, `PLAN.md` §8) e „a intrat, n-a atins
+  // nimic, a ieșit" despre vizita curentă.
+  const [incercateSesiune, setIncercateSesiune] = useState<Set<number>>(new Set());
+  const [arataReactieZero, setArataReactieZero] = useState(false);
 
   useEffect(() => {
     let anulat = false;
@@ -123,11 +132,13 @@ function EcranLectie() {
       Promise.all([
         faptelActive(),
         personalizarileLectiei(lectie.exercitii.map((e) => e.id)),
+        citesteSetari(),
       ])
-        .then(([f, p]) => {
+        .then(([f, p, s]) => {
           if (!anulat) {
             setFapte(f);
             setPersonalizari(p);
+            setTon(s.registruTon as RegistruTon);
           }
         })
         .catch(() => {});
@@ -218,6 +229,7 @@ function EcranLectie() {
       await scrieProgresNivel(lectie.nivel.id);
       setIncarcare({ ...incarcare, xp: xpMaterie });
       setIncercate((v) => new Set(v).add(ex.id));
+      setIncercateSesiune((v) => new Set(v).add(ex.id));
       setRulare({ fel: "gata", raport, socoteala });
     } catch (e) {
       setIncarcare({ fel: "eroare", mesaj: mesajEroare(e) });
@@ -261,6 +273,17 @@ function EcranLectie() {
     }
   }
 
+  // Zero XP (pasul 26, `PLAN.md` §8): dacă vizita asta n-a adus nici XP de
+  // briefing, nici o încercare, mascota reacționează înainte să pleci — nu
+  // te oprește, doar oferă un exercițiu ușor ca alternativă.
+  function iesiDinLectie() {
+    if (incercateSesiune.size === 0 && xpBriefing === 0) {
+      setArataReactieZero(true);
+      return;
+    }
+    router.push(cu("/curs/", cheie));
+  }
+
   async function terminaLectia() {
     mergiLa({ fel: "gata" });
     try {
@@ -276,6 +299,24 @@ function EcranLectie() {
   }
 
   const titlu = `Lecția ${lectie.nivel.ordine} · ${lectie.nivel.nume}`;
+
+  if (arataReactieZero) {
+    return (
+      <Ecran>
+        <AntetEcran titlu={titlu} />
+        <ContinutEcran>
+          <ReactieZero
+            ton={ton}
+            onIncearca={() => {
+              setArataReactieZero(false);
+              mergiLa({ fel: "practica", indice: 0 });
+            }}
+            onIesi={() => router.push(cu("/curs/", cheie))}
+          />
+        </ContinutEcran>
+      </Ecran>
+    );
+  }
 
   if (faza.fel === "briefing") {
     const ecran = ecrane[faza.ecran];
@@ -307,9 +348,9 @@ function EcranLectie() {
               Ecranul dinainte
             </Buton>
           ) : null}
-          <ButonLegatura href={cu("/curs/", cheie)} fel="secundar">
+          <Buton fel="secundar" onClick={iesiDinLectie}>
             Înapoi la curs
-          </ButonLegatura>
+          </Buton>
         </BaraActiuni>
       </Ecran>
     );
@@ -448,9 +489,9 @@ function EcranLectie() {
             </Buton>
           )}
 
-          <ButonLegatura href={cu("/curs/", cheie)} fel="secundar">
+          <Buton fel="secundar" onClick={iesiDinLectie}>
             Înapoi la curs
-          </ButonLegatura>
+          </Buton>
         </BaraActiuni>
       </Ecran>
     );
