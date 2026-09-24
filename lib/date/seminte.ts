@@ -49,6 +49,11 @@ export function limbajul(e: Exercitiu): Limbaj {
   return e.limbaj === "sql" ? "sql" : "python";
 }
 
+/** Rubrica ajunge în `jsonb`, deci se citește înapoi ca `unknown` — doar la `tip: "liber"` (pasul 27). */
+export function rubricaExercitiului(e: Exercitiu): string[] {
+  return (e.rubrica ?? []) as string[];
+}
+
 export function briefingul(n: Nivel): EcranBriefing[] {
   const b = n.briefing as { ecrane?: EcranBriefing[] } | null;
   return b?.ecrane ?? [];

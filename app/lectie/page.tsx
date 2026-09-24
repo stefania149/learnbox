@@ -12,6 +12,7 @@ import {
 import { Buton, ButonLegatura } from "@/componente/buton";
 import { EditorCod } from "@/componente/editor-cod";
 import { RaportCazuri, type StareRaport } from "@/componente/raport-cazuri";
+import { RaportRubrica, type StareRaportLiber } from "@/componente/raport-rubrica";
 import { ReactieZero } from "@/componente/mascota";
 import { mesajEroare } from "@/lib/date/erori";
 import { testulLectiei } from "@/lib/date/teste";
@@ -24,6 +25,7 @@ import {
   briefingul,
   cazurile,
   limbajul,
+  rubricaExercitiului,
   type EcranBriefing,
 } from "@/lib/date/seminte";
 import {
@@ -35,6 +37,7 @@ import {
 } from "@/lib/date/progres";
 import { citesteXpTotal, scrieIncercare } from "@/lib/date/incercari";
 import { evalueaza, RABDARE_MS } from "@/lib/exercitii/motor";
+import { evalueazaLiber, raportNeevaluat } from "@/lib/exercitii/evalueaza-liber";
 import { faptele as faptelActive, type Fapt } from "@/lib/date/asistent";
 import {
   personalizarileLectiei,
@@ -48,6 +51,7 @@ const NUME_TIP: Record<string, string> = {
   completeaza: "Completează",
   repara: "Repară",
   scrie: "Scrie funcția",
+  liber: "Răspunde",
 };
 
 type Incarcare =
@@ -93,6 +97,8 @@ function EcranLectie() {
   const [faza, setFaza] = useState<Faza>({ fel: "briefing", ecran: 0 });
   const [coduri, setCoduri] = useState<Record<number, string>>({});
   const [rulare, setRulare] = useState<StareRaport>({ fel: "nepornita" });
+  const [raspunsuriLiber, setRaspunsuriLiber] = useState<Record<number, string>>({});
+  const [rulareLiber, setRulareLiber] = useState<StareRaportLiber>({ fel: "nepornita" });
   const [incercate, setIncercate] = useState<Set<number>>(new Set());
   const [urmatoarea, setUrmatoarea] = useState<{ id: number; nume: string } | null>(null);
   const [areTest, setAreTest] = useState(false);
@@ -201,6 +207,7 @@ function EcranLectie() {
   function mergiLa(faza: Faza) {
     setFaza(faza);
     setRulare({ fel: "nepornita" });
+    setRulareLiber({ fel: "nepornita" });
     // Linia „briefingul citit" e despre ce tocmai s-a întâmplat; la al doilea
     // drum prin briefing nu se mai dă XP, deci nici nu mai are ce anunța.
     if (faza.fel === "briefing") setXpBriefing(0);
@@ -223,14 +230,50 @@ function EcranLectie() {
       const { socoteala, xpMaterie } = await scrieIncercare({
         exercitiuId: ex.id,
         materieId: lectie.materieId,
-        cod,
-        raport,
+        raspuns: cod,
+        verdict: raport.verdict,
+        trecute: raport.trecute,
+        total: raport.total,
+        eroarePython: raport.eroarePython,
       });
       await scrieProgresNivel(lectie.nivel.id);
       setIncarcare({ ...incarcare, xp: xpMaterie });
       setIncercate((v) => new Set(v).add(ex.id));
       setIncercateSesiune((v) => new Set(v).add(ex.id));
       setRulare({ fel: "gata", raport, socoteala });
+    } catch (e) {
+      setIncarcare({ fel: "eroare", mesaj: mesajEroare(e) });
+    }
+  }
+
+  /** Exercițiile cu răspuns liber (pasul 27, `PLAN.md` §7) — fără execuție, evaluate prin rubrică. */
+  async function trimiteRaspunsul(indice: number) {
+    if (incarcare.fel !== "gata") return;
+    const ex = exercitii[indice];
+    const raspuns = (raspunsuriLiber[ex.id] ?? "").trim();
+    if (!raspuns) return;
+    const rubrica = rubricaExercitiului(ex);
+
+    setRulareLiber({ fel: "se-evalueaza" });
+    const pornit = motorPornit();
+    const raport = pornit
+      ? await evalueazaLiber(await pornit, rubrica, raspuns).catch(() => raportNeevaluat(rubrica))
+      : raportNeevaluat(rubrica);
+
+    try {
+      const { socoteala, xpMaterie } = await scrieIncercare({
+        exercitiuId: ex.id,
+        materieId: lectie.materieId,
+        raspuns,
+        verdict: raport.verdict,
+        trecute: raport.trecute,
+        total: raport.total,
+      });
+      await scrieProgresNivel(lectie.nivel.id);
+      setIncarcare({ ...incarcare, xp: xpMaterie });
+      setIncercate((v) => new Set(v).add(ex.id));
+      setIncercateSesiune((v) => new Set(v).add(ex.id));
+      setRulareLiber({ fel: "gata", raport, socoteala });
     } catch (e) {
       setIncarcare({ fel: "eroare", mesaj: mesajEroare(e) });
     }
@@ -360,6 +403,9 @@ function EcranLectie() {
     const ex = exercitii[faza.indice];
     const ultimul = faza.indice === exercitii.length - 1;
     const aFostIncercat = incercate.has(ex.id);
+    const esteLiber = ex.tip === "liber";
+    const seLucreazaLiber = rulareLiber.fel === "se-evalueaza";
+    const ocupat = esteLiber ? seLucreazaLiber : seLucreaza;
 
     return (
       <Ecran>
@@ -406,26 +452,56 @@ function EcranLectie() {
             ) : null}
           </Panou>
 
-          <Panou>
-            <EditorCod
-              eticheta="Codul tău"
-              limbaj={limbajul(ex)}
-              valoare={coduri[ex.id] ?? ""}
-              onSchimba={(cod) =>
-                setCoduri((v) => ({ ...v, [ex.id]: cod }))
-              }
-              dezactivat={seLucreaza}
-              ajutor={`Rularea are ${RABDARE_MS / 1000} secunde. Cazurile se verifică pe rând, iar ce a trecut până la oprire rămâne trecut. Tab te scoate din editor; indentarea se face cu spații.`}
-            />
-          </Panou>
+          {esteLiber ? (
+            <Panou>
+              <label
+                htmlFor="raspuns-liber"
+                className="flex flex-col gap-2 text-sm text-text-slab"
+              >
+                Răspunsul tău
+                <textarea
+                  id="raspuns-liber"
+                  value={raspunsuriLiber[ex.id] ?? ""}
+                  onChange={(e) =>
+                    setRaspunsuriLiber((v) => ({ ...v, [ex.id]: e.target.value }))
+                  }
+                  disabled={ocupat}
+                  rows={6}
+                  placeholder="Scrie răspunsul aici…"
+                  className="min-h-32 resize-none rounded-tema border border-contur bg-suprafata p-3 font-mono text-sm text-text placeholder:text-text-slab focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                />
+              </label>
+            </Panou>
+          ) : (
+            <Panou>
+              <EditorCod
+                eticheta="Codul tău"
+                limbaj={limbajul(ex)}
+                valoare={coduri[ex.id] ?? ""}
+                onSchimba={(cod) =>
+                  setCoduri((v) => ({ ...v, [ex.id]: cod }))
+                }
+                dezactivat={ocupat}
+                ajutor={`Rularea are ${RABDARE_MS / 1000} secunde. Cazurile se verifică pe rând, iar ce a trecut până la oprire rămâne trecut. Tab te scoate din editor; indentarea se face cu spații.`}
+              />
+            </Panou>
+          )}
 
-          <Panou titlu="Cazuri de test">
-            <RaportCazuri
-              stare={rulare}
-              cazuri={cazurile(ex)}
-              limbaj={limbajul(ex)}
-              explicatie={ex.explicatiePredefinita}
-            />
+          <Panou titlu={esteLiber ? "Evaluare" : "Cazuri de test"}>
+            {esteLiber ? (
+              <RaportRubrica
+                stare={rulareLiber}
+                rubrica={rubricaExercitiului(ex)}
+                explicatie={ex.explicatiePredefinita}
+              />
+            ) : (
+              <RaportCazuri
+                stare={rulare}
+                cazuri={cazurile(ex)}
+                limbaj={limbajul(ex)}
+                explicatie={ex.explicatiePredefinita}
+              />
+            )}
           </Panou>
 
           <Panou titlu="XP">
@@ -443,15 +519,24 @@ function EcranLectie() {
         </ContinutEcran>
 
         <BaraActiuni>
-          <Buton onClick={() => ruleaza(faza.indice)} disabled={seLucreaza}>
-            {seLucreaza ? "Se lucrează…" : "Rulează cazurile"}
-          </Buton>
+          {esteLiber ? (
+            <Buton
+              onClick={() => trimiteRaspunsul(faza.indice)}
+              disabled={ocupat || !(raspunsuriLiber[ex.id] ?? "").trim()}
+            >
+              {ocupat ? "Se citește…" : "Trimite răspunsul"}
+            </Buton>
+          ) : (
+            <Buton onClick={() => ruleaza(faza.indice)} disabled={ocupat}>
+              {ocupat ? "Se lucrează…" : "Rulează cazurile"}
+            </Buton>
+          )}
 
           {ultimul ? (
             <Buton
               fel="secundar"
               onClick={terminaLectia}
-              disabled={seLucreaza || !aFostIncercat}
+              disabled={ocupat || !aFostIncercat}
             >
               Termină lecția
             </Buton>
@@ -461,7 +546,7 @@ function EcranLectie() {
               onClick={() =>
                 mergiLa({ fel: "practica", indice: faza.indice + 1 })
               }
-              disabled={seLucreaza || !aFostIncercat}
+              disabled={ocupat || !aFostIncercat}
             >
               Exercițiul următor
             </Buton>
@@ -473,7 +558,7 @@ function EcranLectie() {
               onClick={() =>
                 mergiLa({ fel: "practica", indice: faza.indice - 1 })
               }
-              disabled={seLucreaza}
+              disabled={ocupat}
             >
               Exercițiul dinainte
             </Buton>
@@ -483,7 +568,7 @@ function EcranLectie() {
               onClick={() =>
                 mergiLa({ fel: "briefing", ecran: Math.max(ecrane.length - 1, 0) })
               }
-              disabled={seLucreaza || ecrane.length === 0}
+              disabled={ocupat || ecrane.length === 0}
             >
               Înapoi la briefing
             </Buton>

@@ -1,5 +1,7 @@
 /**
- * Generarea cursului propriu — pasul 20 (`PLAN.md` §6, punctul 4).
+ * Generarea cursului propriu — pasul 20 (`PLAN.md` §6, punctul 4), cu
+ * fallback la răspuns liber — pasul 27 (`PLAN.md` §7: „Pentru materiile fără
+ * execuție").
  *
  * Graful de concepte (pasul 19) se așază topologic — un concept apare abia
  * după toate cele de care depinde. Fiecare concept devine o lecție: un
@@ -9,13 +11,14 @@
  * **Verdictul nu trece prin model, nici la conținut generat** (principiul 1):
  * cazurile de test nu sunt ce spune modelul că ar ieși, ci ce iese chiar din
  * rularea soluției lui în Pyodide. Dacă soluția nu rulează, sau codul de
- * pornire trece deja totul, lecția aia se sare — nu ajunge în bază o lecție
- * stricată.
+ * pornire trece deja totul, se încearcă un exercițiu cu răspuns liber și
+ * rubrică — pentru materiile care nu se pretează la cod (istorie, economie),
+ * asta se întâmplă la fiecare concept, nu doar din când în când. Dacă nici
+ * asta nu iese, lecția aia se sare — nu ajunge în bază o lecție stricată.
  *
  * **Incrementală și reluabilă**: o lecție intră în bază abia gata (briefing +
- * exercițiu verificat) — nimic pe jumătate. `genereazaCursul` reia de unde a
- * rămas: sare lecțiile care există deja, indiferent dacă fila s-a închis la
- * mijloc.
+ * exercițiu) — nimic pe jumătate. `genereazaCursul` reia de unde a rămas:
+ * sare lecțiile care există deja, indiferent dacă fila s-a închis la mijloc.
  */
 import { eq } from "drizzle-orm";
 import { deschideBaza } from "@/lib/date/client";
@@ -151,6 +154,62 @@ async function genereazaExercitiul(
   }
 }
 
+type ExercitiuLiberGenerat = { enunt: string; rubrica: string[] };
+
+const SCHEMA_EXERCITIU_LIBER = {
+  type: "object",
+  properties: {
+    enunt: { type: "string" },
+    rubrica: { type: "array", items: { type: "string" } },
+  },
+  required: ["enunt", "rubrica"],
+};
+
+/**
+ * Fallback pentru concepte care nu se pretează la cod (`PLAN.md` §7). „rubrica”
+ * sunt 2-4 lucruri concrete pe care un răspuns bun le atinge — evaluarea lor
+ * se face mai târziu, cu prompt izolat, la răspunsul utilizatorului
+ * (`lib/exercitii/evalueaza-liber.ts`), niciodată aici.
+ */
+async function genereazaExercitiulLiber(
+  motor: MLCEngineInterface,
+  c: ConceptRand,
+): Promise<ExercitiuLiberGenerat | null> {
+  const raspuns = await motor.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "Scrii un exercițiu scurt, cu răspuns liber, pentru un începător, despre un concept anume — pentru o materie care nu se verifică prin cod. „enunt” e o întrebare sau o cerere clară, în română, la care se răspunde în câteva propoziții. „rubrica” sunt 2-4 lucruri concrete pe care un răspuns bun le atinge, fiecare o propoziție scurtă, în română. Răspunde numai cu JSON, conform schemei.",
+      },
+      {
+        role: "user",
+        content: `Concept: ${c.nume}${c.descriere ? `\nCe înseamnă: ${c.descriere}` : ""}`,
+      },
+    ],
+    response_format: { type: "json_object", schema: JSON.stringify(SCHEMA_EXERCITIU_LIBER) },
+    max_tokens: 500,
+    temperature: 0.4,
+  });
+
+  try {
+    const o = JSON.parse(raspuns.choices[0]?.message?.content ?? "{}") as Record<
+      string,
+      unknown
+    >;
+    if (typeof o.enunt !== "string" || o.enunt.trim() === "" || !Array.isArray(o.rubrica)) {
+      return null;
+    }
+    const rubrica = o.rubrica
+      .filter((r): r is string => typeof r === "string" && r.trim() !== "")
+      .slice(0, 4);
+    if (rubrica.length < 2) return null;
+    return { enunt: o.enunt.trim(), rubrica };
+  } catch {
+    return null;
+  }
+}
+
 /** Antetul funcției (prima linie a `cod`-ului), pentru codul de pornire. */
 function antetul(cod: string): string | null {
   const primaLinie = cod.split("\n")[0]?.trim();
@@ -199,52 +258,8 @@ _tut_json.dumps(_tut_rezultate)
   }
 }
 
-/**
- * O lecție, din concept până în bază. Întoarce `false` fără să scrie nimic
- * dacă modelul n-a produs ceva utilizabil — nu ajunge o lecție stricată în
- * joc.
- */
-async function genereazaNivelul(
-  motor: MLCEngineInterface,
-  capitolId: number,
-  ordine: number,
-  c: ConceptRand,
-): Promise<boolean> {
-  const ex = await genereazaExercitiul(motor, c);
-  if (!ex) return false;
-
-  const antet = antetul(ex.cod);
-  if (!antet) return false;
-  const nume = numeleFunctiei(antet);
-  if (!nume) return false;
-
-  // Modelul mic ancorează des pe alt nume de funcție decât cel scris în cod
-  // (de exemplu, pe unul dat ca exemplu în prompt) — apelurile alea nu duc
-  // nicăieri, deci se scot înainte să pornim Pyodide degeaba.
-  const apeluriPotrivite = ex.apeluri.filter((a) => a.trimStart().startsWith(`${nume}(`));
-  if (apeluriPotrivite.length === 0) return false;
-
-  const rezultate = await descoperaRezultatele(ex.cod, apeluriPotrivite);
-  if (!rezultate) return false;
-
-  const cazuri: CazTest[] = apeluriPotrivite
-    .map((apel, i) => ({ apel, asteptat: rezultate[i] }))
-    .filter((cz): cz is CazTest => cz.asteptat !== null);
-  // Sub două cazuri utile nu merită un exercițiu — prea puțin de arătat.
-  if (cazuri.length < 2) return false;
-
-  const codInitial = `${antet}\n    pass`;
-  const dinInitial = await descoperaRezultatele(codInitial, apeluriPotrivite);
-  const initialTreceTot =
-    dinInitial !== null &&
-    cazuri.every((cz) => {
-      const indice = apeluriPotrivite.indexOf(cz.apel);
-      return indice !== -1 && dinInitial[indice] === cz.asteptat;
-    });
-  // Dacă „pass" nimerește deja totul (funcția n-avea ce returna, de exemplu),
-  // exercițiul ăsta ar fi deja rezolvat din prima — se sare.
-  if (initialTreceTot) return false;
-
+/** Rândul comun al lecției — briefingul e la fel, indiferent de tipul exercițiului. */
+async function insereazaNivelul(capitolId: number, ordine: number, c: ConceptRand) {
   const { baza } = await deschideBaza();
   const [randNivel] = await baza
     .insert(nivel)
@@ -256,20 +271,109 @@ async function genereazaNivelul(
       briefing: { ecrane: [{ titlu: c.nume, text: c.descriere ?? c.nume }] },
     })
     .returning();
+  return randNivel;
+}
 
+type ExercitiuDeCod = {
+  enunt: string;
+  codInitial: string;
+  solutie: string;
+  cazuriTest: CazTest[];
+};
+
+/**
+ * Încearcă drumul „scrie funcția", verificat prin rulare reală (principiul 1).
+ * Întoarce `null` fără să scrie nimic dacă modelul n-a produs ceva utilizabil
+ * — apelantul încearcă apoi fallback-ul cu răspuns liber (pasul 27).
+ */
+async function incearcaExercitiulDeCod(
+  motor: MLCEngineInterface,
+  c: ConceptRand,
+): Promise<ExercitiuDeCod | null> {
+  const ex = await genereazaExercitiul(motor, c);
+  if (!ex) return null;
+
+  const antet = antetul(ex.cod);
+  if (!antet) return null;
+  const nume = numeleFunctiei(antet);
+  if (!nume) return null;
+
+  // Modelul mic ancorează des pe alt nume de funcție decât cel scris în cod
+  // (de exemplu, pe unul dat ca exemplu în prompt) — apelurile alea nu duc
+  // nicăieri, deci se scot înainte să pornim Pyodide degeaba.
+  const apeluriPotrivite = ex.apeluri.filter((a) => a.trimStart().startsWith(`${nume}(`));
+  if (apeluriPotrivite.length === 0) return null;
+
+  const rezultate = await descoperaRezultatele(ex.cod, apeluriPotrivite);
+  if (!rezultate) return null;
+
+  const cazuri: CazTest[] = apeluriPotrivite
+    .map((apel, i) => ({ apel, asteptat: rezultate[i] }))
+    .filter((cz): cz is CazTest => cz.asteptat !== null);
+  // Sub două cazuri utile nu merită un exercițiu — prea puțin de arătat.
+  if (cazuri.length < 2) return null;
+
+  const codInitial = `${antet}\n    pass`;
+  const dinInitial = await descoperaRezultatele(codInitial, apeluriPotrivite);
+  const initialTreceTot =
+    dinInitial !== null &&
+    cazuri.every((cz) => {
+      const indice = apeluriPotrivite.indexOf(cz.apel);
+      return indice !== -1 && dinInitial[indice] === cz.asteptat;
+    });
+  // Dacă „pass" nimerește deja totul (funcția n-avea ce returna, de exemplu),
+  // exercițiul ăsta ar fi deja rezolvat din prima — se sare.
+  if (initialTreceTot) return null;
+
+  return { enunt: ex.enunt, codInitial, solutie: ex.cod, cazuriTest: cazuri };
+}
+
+/**
+ * O lecție, din concept până în bază. Întoarce `false` fără să scrie nimic
+ * dacă niciunul din cele două drumuri n-a produs ceva utilizabil — nu ajunge
+ * o lecție stricată în joc.
+ */
+async function genereazaNivelul(
+  motor: MLCEngineInterface,
+  capitolId: number,
+  ordine: number,
+  c: ConceptRand,
+): Promise<boolean> {
+  const { baza } = await deschideBaza();
+
+  const cod = await incearcaExercitiulDeCod(motor, c);
+  if (cod) {
+    const randNivel = await insereazaNivelul(capitolId, ordine, c);
+    await baza.insert(exercitiu).values({
+      nivelId: randNivel.id,
+      cheie: cheieExercitiu(c.id),
+      ordine: 1,
+      tip: "scrie",
+      limbaj: "python",
+      enunt: cod.enunt,
+      codInitial: cod.codInitial,
+      solutie: cod.solutie,
+      cazuriTest: cod.cazuriTest,
+      explicatiePredefinita: c.descriere ?? cod.enunt,
+    });
+    return true;
+  }
+
+  // Conceptul nu s-a pretat la cod — probabil o materie fără execuție
+  // (`PLAN.md` §7). Fallback la răspuns liber cu rubrică.
+  const liber = await genereazaExercitiulLiber(motor, c);
+  if (!liber) return false;
+
+  const randNivel = await insereazaNivelul(capitolId, ordine, c);
   await baza.insert(exercitiu).values({
     nivelId: randNivel.id,
     cheie: cheieExercitiu(c.id),
     ordine: 1,
-    tip: "scrie",
-    limbaj: "python",
-    enunt: ex.enunt,
-    codInitial,
-    solutie: ex.cod,
-    cazuriTest: cazuri,
-    explicatiePredefinita: c.descriere ?? ex.enunt,
+    tip: "liber",
+    enunt: liber.enunt,
+    rubrica: liber.rubrica,
+    explicatiePredefinita: c.descriere ?? liber.enunt,
   });
-
   return true;
 }
 
